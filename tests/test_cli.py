@@ -180,7 +180,7 @@ class TestCLIIntegration:
         mock_create.return_value = Path("/tmp/github/owner/repo")
         mock_clone.return_value = True
         
-        with patch('sys.argv', ['gc', 'https://github.com/owner/repo.git']):
+        with patch('sys.argv', ['glon', 'https://github.com/owner/repo.git']):
             with patch('builtins.print') as mock_print:
                 from glon.cli import main
                 main()
@@ -197,7 +197,7 @@ class TestCLIIntegration:
         """Test main function with invalid URL."""
         mock_parse.return_value = None
         
-        with patch('sys.argv', ['gc', 'invalid-url']):
+        with patch('sys.argv', ['glon', 'invalid-url']):
             with patch('sys.exit') as mock_exit:
                 with patch('builtins.print') as mock_print:
                     from glon.cli import main
@@ -215,7 +215,7 @@ class TestCLIIntegration:
         mock_create.return_value = Path("/tmp/github/owner/repo")
         mock_clone.return_value = False
         
-        with patch('sys.argv', ['gc', 'https://github.com/owner/repo.git']):
+        with patch('sys.argv', ['glon', 'https://github.com/owner/repo.git']):
             with patch('builtins.print') as mock_print:
                 from glon.cli import main
                 main()
@@ -231,7 +231,7 @@ class TestCLIIntegration:
         mock_parse.return_value = ("owner", "repo")
         mock_create.return_value = Path("/tmp/github/owner/repo")
         
-        with patch('sys.argv', ['gc', '--dry-run', 'https://github.com/owner/repo.git']):
+        with patch('sys.argv', ['glon', '--dry-run', 'https://github.com/owner/repo.git']):
             with patch('builtins.print') as mock_print:
                 from glon.cli import main
                 main()

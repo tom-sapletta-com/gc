@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "glon"
-version = "0.1.9"
+version = "0.1.10"
 description = "Python package for garbage collection utilities and memory management"
 readme = "README.md"
 license = "Apache-2.0"
@@ -51,7 +51,7 @@ test = [
 ]
 
 [project.scripts]
-gc = "glon.cli:main"
+glon = "glon.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/tom-sapletta/gc"

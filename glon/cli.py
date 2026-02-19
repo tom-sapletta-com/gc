@@ -104,7 +104,7 @@ def main():
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
         description="Git Clone utility - Clone repositories to organized directory structure",
-        prog="gc"
+        prog="glon"
     )
     
     parser.add_argument(

@@ -1,3 +1,22 @@
+## [0.1.10] - 2026-02-19
+
+### Summary
+
+refactor(goal): CLI interface improvements
+
+### Test
+
+- update tests/test_cli.py
+
+### Build
+
+- update pyproject.toml
+
+### Other
+
+- update glon/cli.py
+
+
 ## [0.1.9] - 2026-02-19
 
 ### Summary
