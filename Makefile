@@ -73,31 +73,7 @@ docs:
 
 # Example usage
 run-example:
-	python -c "
-from gc import GarbageCollector, MemoryProfiler
-from gc.utils import analyze_memory_usage
-
-print('=== Garbage Collection Demo ===')
-gc_manager = GarbageCollector()
-summary = gc_manager.get_memory_summary()
-print(f'Memory Summary: {summary}')
-
-print('\n=== Memory Profiling Demo ===')
-profiler = MemoryProfiler()
-profiler.take_snapshot('start')
-
-# Create some objects
-data = [list(range(1000)) for _ in range(10)]
-profiler.take_snapshot('after_data_creation')
-
-comparison = profiler.compare_snapshots(0, 1)
-print(f'Memory change: {comparison[\"rss_diff\"]} bytes')
-
-print('\n=== Memory Analysis Demo ===')
-analysis = analyze_memory_usage()
-print(f'Total objects: {analysis[\"objects\"][\"total_count\"]}')
-print(f'Memory usage: {analysis[\"memory\"][\"rss\"]} bytes')
-"
+	python -c "from gc import GarbageCollector, MemoryProfiler; from gc.utils import analyze_memory_usage; print('=== Garbage Collection Demo ==='); gc_manager = GarbageCollector(); summary = gc_manager.get_memory_summary(); print(f'Memory Summary: {summary}'); print('\n=== Memory Profiling Demo ==='); profiler = MemoryProfiler(); profiler.take_snapshot('start'); data = [list(range(1000)) for _ in range(10)]; profiler.take_snapshot('after_data_creation'); comparison = profiler.compare_snapshots(0, 1); print(f'Memory change: {comparison[\"rss_diff\"]} bytes'); print('\n=== Memory Analysis Demo ==='); analysis = analyze_memory_usage(); print(f'Total objects: {analysis[\"objects\"][\"total_count\"]}'); print(f'Memory usage: {analysis[\"memory\"][\"rss\"]} bytes')"
 
 # Development workflow
 dev-setup: install-dev
@@ -127,31 +103,7 @@ check-deps:
 
 # Performance testing
 perf-test:
-	python -c "
-import time
-from gc import GarbageCollector, MemoryProfiler
-
-print('Performance Test...')
-gc_manager = GarbageCollector()
-profiler = MemoryProfiler()
-
-# Test garbage collection performance
-start_time = time.time()
-for i in range(1000):
-    data = [list(range(100)) for _ in range(10)]
-    collected = gc_manager.collect()
-gc_time = time.time() - start_time
-
-print(f'Garbage collection time: {gc_time:.4f}s')
-
-# Test memory profiling performance
-start_time = time.time()
-for i in range(100):
-    profiler.take_snapshot(f'snapshot_{i}')
-prof_time = time.time() - start_time
-
-print(f'Memory profiling time: {prof_time:.4f}s')
-"
+	python -c "import time; from gc import GarbageCollector, MemoryProfiler; print('Performance Test...'); gc_manager = GarbageCollector(); profiler = MemoryProfiler(); start_time = time.time(); [data for i in range(1000) for data in [[list(range(100)) for _ in range(10)]]]; gc_time = time.time() - start_time; print(f'Garbage collection time: {gc_time:.4f}s'); start_time = time.time(); [profiler.take_snapshot(f'snapshot_{i}') for i in range(100)]; prof_time = time.time() - start_time; print(f'Memory profiling time: {prof_time:.4f}s')"
 
 # Security check
 security:

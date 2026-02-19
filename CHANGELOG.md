@@ -1,3 +1,18 @@
+## [0.1.3] - 2026-02-19
+
+### Summary
+
+refactor(build): new API capabilities
+
+### Docs
+
+- docs: update TODO.md
+
+### Other
+
+- build: update Makefile
+
+
 ## [0.1.2] - 2026-02-19
 
 ### Summary
