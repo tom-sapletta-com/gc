@@ -1,3 +1,28 @@
+## [0.1.1] - 2026-02-19
+
+### Summary
+
+feat(tests): deep code analysis engine with 6 supporting modules
+
+### Test
+
+- update tests/__init__.py
+- update tests/test_core.py
+- update tests/test_utils.py
+
+### Build
+
+- update pyproject.toml
+
+### Config
+
+- config: update goal.yaml
+
+### Other
+
+- update gc/utils.py
+
+
 ## [1.0.1] - 2026-02-19
 
 ### Summary
