@@ -8,7 +8,7 @@ import tempfile
 import os
 from unittest.mock import patch, MagicMock
 from pathlib import Path
-from klo.cli import parse_git_url, create_directory_structure, clone_repository
+from glon.cli import parse_git_url, create_directory_structure, clone_repository
 
 
 class TestParseGitUrl:
@@ -171,9 +171,9 @@ class TestCloneRepository:
 class TestCLIIntegration:
     """Integration tests for CLI functionality."""
     
-    @patch('klo.cli.clone_repository')
-    @patch('klo.cli.create_directory_structure')
-    @patch('klo.cli.parse_git_url')
+    @patch('glon.cli.clone_repository')
+    @patch('glon.cli.create_directory_structure')
+    @patch('glon.cli.parse_git_url')
     def test_main_successful_clone(self, mock_parse, mock_create, mock_clone):
         """Test main function with successful clone."""
         mock_parse.return_value = ("owner", "repo")
@@ -182,7 +182,7 @@ class TestCLIIntegration:
         
         with patch('sys.argv', ['gc', 'https://github.com/owner/repo.git']):
             with patch('builtins.print') as mock_print:
-                from klo.cli import main
+                from glon.cli import main
                 main()
                 
                 mock_parse.assert_called_once_with("https://github.com/owner/repo.git")
@@ -192,7 +192,7 @@ class TestCLIIntegration:
                 # Check success message
                 mock_print.assert_any_call("Repository ready at: /tmp/github/owner/repo")
     
-    @patch('klo.cli.parse_git_url')
+    @patch('glon.cli.parse_git_url')
     def test_main_invalid_url(self, mock_parse):
         """Test main function with invalid URL."""
         mock_parse.return_value = None
@@ -200,15 +200,15 @@ class TestCLIIntegration:
         with patch('sys.argv', ['gc', 'invalid-url']):
             with patch('sys.exit') as mock_exit:
                 with patch('builtins.print') as mock_print:
-                    from klo.cli import main
+                    from glon.cli import main
                     main()
                     
                     mock_exit.assert_not_called()
                     mock_print.assert_any_call("Error: Invalid git URL format: invalid-url")
     
-    @patch('klo.cli.clone_repository')
-    @patch('klo.cli.create_directory_structure')
-    @patch('klo.cli.parse_git_url')
+    @patch('glon.cli.clone_repository')
+    @patch('glon.cli.create_directory_structure')
+    @patch('glon.cli.parse_git_url')
     def test_main_clone_failure(self, mock_parse, mock_create, mock_clone):
         """Test main function with clone failure."""
         mock_parse.return_value = ("owner", "repo")
@@ -217,15 +217,15 @@ class TestCLIIntegration:
         
         with patch('sys.argv', ['gc', 'https://github.com/owner/repo.git']):
             with patch('builtins.print') as mock_print:
-                from klo.cli import main
+                from glon.cli import main
                 main()
                 
                 # Should not print success message on failure
                 assert not any("Repository ready at" in str(call) for call in mock_print.call_args_list)
     
-    @patch('klo.cli.clone_repository')
-    @patch('klo.cli.create_directory_structure')
-    @patch('klo.cli.parse_git_url')
+    @patch('glon.cli.clone_repository')
+    @patch('glon.cli.create_directory_structure')
+    @patch('glon.cli.parse_git_url')
     def test_main_dry_run(self, mock_parse, mock_create, mock_clone):
         """Test main function with dry run."""
         mock_parse.return_value = ("owner", "repo")
@@ -233,7 +233,7 @@ class TestCLIIntegration:
         
         with patch('sys.argv', ['gc', '--dry-run', 'https://github.com/owner/repo.git']):
             with patch('builtins.print') as mock_print:
-                from klo.cli import main
+                from glon.cli import main
                 main()
                 
                 mock_clone.assert_not_called()

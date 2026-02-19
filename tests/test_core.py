@@ -5,7 +5,7 @@ Tests for core garbage collection functionality.
 import pytest
 import gc
 import time
-from klo.core import GarbageCollector, MemoryProfiler
+from glon.core import GarbageCollector, MemoryProfiler
 
 
 class TestGarbageCollector:

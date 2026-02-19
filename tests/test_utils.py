@@ -7,7 +7,7 @@ import gc
 import tempfile
 import os
 from unittest.mock import patch, MagicMock
-from klo.utils import (
+from glon.utils import (
     cleanup_temp_files,
     monitor_memory_usage,
     force_garbage_collection,
@@ -66,7 +66,7 @@ class TestCleanupTempFiles:
 class TestMonitorMemoryUsage:
     """Test cases for monitor_memory_usage function."""
     
-    @patch('klo.utils.psutil')
+    @patch('glon.utils.psutil')
     def test_monitor_memory_usage(self, mock_psutil):
         """Test memory usage monitoring."""
         # Mock psutil.Process
@@ -77,7 +77,7 @@ class TestMonitorMemoryUsage:
         mock_psutil.os.getpid.return_value = 1234
         
         # Mock time.sleep to avoid actual delay
-        with patch('gc_toolkit.utils.time.sleep'):
+        with patch('glon.utils.time.sleep'):
             samples = monitor_memory_usage(duration=2, interval=0.1)
         
         assert len(samples) >= 20  # Should have at least 20 samples
@@ -172,7 +172,7 @@ class TestGetObjectSize:
 class TestAnalyzeMemoryUsage:
     """Test cases for analyze_memory_usage function."""
     
-    @patch('klo.utils.psutil')
+    @patch('glon.utils.psutil')
     def test_analyze_memory_usage(self, mock_psutil):
         """Test memory usage analysis."""
         # Mock psutil.Process

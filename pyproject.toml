@@ -3,8 +3,8 @@ requires = ["setuptools>=61.0", "wheel", "twine"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "klo-git"
-version = "0.1.8"
+name = "glon"
+version = "0.1.9"
 description = "Python package for garbage collection utilities and memory management"
 readme = "README.md"
 license = "Apache-2.0"
@@ -51,7 +51,7 @@ test = [
 ]
 
 [project.scripts]
-gc = "klo.cli:main"
+gc = "glon.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/tom-sapletta/gc"
@@ -60,7 +60,7 @@ Issues = "https://github.com/tom-sapletta/gc/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["klo*"]
+include = ["glon*"]
 
 [tool.black]
 line-length = 88
