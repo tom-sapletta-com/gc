@@ -102,20 +102,31 @@ class MemoryProfiler:
         Returns:
             Dictionary containing snapshot data
         """
-        import psutil
-        import os
-        
-        process = psutil.Process(os.getpid())
-        memory_info = process.memory_info()
-        
-        snapshot = {
-            'label': label,
-            'timestamp': time.time(),
-            'rss': memory_info.rss,  # Resident Set Size
-            'vms': memory_info.vms,  # Virtual Memory Size
-            'objects_count': len(gc.get_objects()),
-            'gc_counts': gc.get_count()
-        }
+        try:
+            import psutil
+            import os
+            
+            process = psutil.Process(os.getpid())
+            memory_info = process.memory_info()
+            
+            snapshot = {
+                'label': label,
+                'timestamp': time.time(),
+                'rss': memory_info.rss,  # Resident Set Size
+                'vms': memory_info.vms,  # Virtual Memory Size
+                'objects_count': len(gc.get_objects()),
+                'gc_counts': gc.get_count()
+            }
+        except ImportError:
+            # Fallback when psutil is not available
+            snapshot = {
+                'label': label,
+                'timestamp': time.time(),
+                'rss': 0,
+                'vms': 0,
+                'objects_count': len(gc.get_objects()),
+                'gc_counts': gc.get_count()
+            }
         
         self.snapshots.append(snapshot)
         return snapshot

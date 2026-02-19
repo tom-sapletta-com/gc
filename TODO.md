@@ -11,7 +11,7 @@ git@github.com:tom-sapletta-com/gc.git
 https://github.com/tom-sapletta-com/gc.git
 
 stwórz fodler w sciezce:
-~/github/tom-sapletta-com/gc
+~/github/tom-sapletta-com/xen
 
 i sklonuj tam ten zasob
 

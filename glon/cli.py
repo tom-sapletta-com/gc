@@ -11,6 +11,55 @@ from typing import Optional
 import re
 
 
+def _read_clipboard_text() -> Optional[str]:
+    try:
+        import tkinter
+
+        root = tkinter.Tk()
+        root.withdraw()
+        try:
+            text = root.clipboard_get()
+        finally:
+            root.destroy()
+        return text
+    except Exception:
+        pass
+
+    for cmd in (
+        ["wl-paste", "-n"],
+        ["xclip", "-o", "-selection", "clipboard"],
+        ["xsel", "--clipboard", "--output"],
+    ):
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        except Exception:
+            continue
+
+        text = (result.stdout or "").strip()
+        if text:
+            return text
+
+    return None
+
+
+def _clipboard_url_candidate(max_len: int = 200) -> Optional[str]:
+    text = _read_clipboard_text()
+    if text is None:
+        return None
+
+    text = text.strip()
+    if not text or len(text) > max_len:
+        return None
+
+    if any(ch in text for ch in ("\n", "\r", "\t")):
+        return None
+
+    if parse_git_url(text) is None:
+        return None
+
+    return text
+
+
 def parse_git_url(url: str) -> Optional[tuple]:
     """
     Parse git URL and extract owner and repository name.
@@ -109,7 +158,9 @@ def main():
     
     parser.add_argument(
         "url",
-        help="Git repository URL (SSH or HTTPS)"
+        nargs="?",
+        default=None,
+        help="Git repository URL (SSH or HTTPS). If omitted, glon will try to use clipboard."
     )
     
     parser.add_argument(
@@ -131,6 +182,12 @@ def main():
     )
     
     args = parser.parse_args()
+
+    if args.url is None:
+        args.url = _clipboard_url_candidate()
+        if args.url is None:
+            print("Error: Missing git URL. Provide URL argument or copy a valid git URL to clipboard.")
+            return
     
     # Parse the URL
     if args.verbose:

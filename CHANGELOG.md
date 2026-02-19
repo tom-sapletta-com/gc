@@ -1,3 +1,19 @@
+## [0.1.11] - 2026-02-19
+
+### Summary
+
+feat(docs): CLI interface improvements
+
+### Docs
+
+- docs: update TODO.md
+
+### Other
+
+- update glon/cli.py
+- update glon/core.py
+
+
 ## [0.1.10] - 2026-02-19
 
 ### Summary
