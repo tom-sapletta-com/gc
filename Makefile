@@ -1,4 +1,4 @@
-# Makefile for gc package
+# Makefile for glon package
 
 .PHONY: help install install-dev test test-verbose lint format type-check clean build upload docs run-example
 
@@ -33,20 +33,20 @@ test-verbose:
 	pytest -v -s
 
 test-coverage:
-	pytest --cov=gc --cov-report=html --cov-report=term
+	pytest --cov=glon --cov-report=html --cov-report=term
 
 # Code quality
 lint:
-	flake8 gc/ tests/
-	black --check gc/ tests/
-	mypy gc/
+	flake8 glon/ tests/
+	black --check glon/ tests/
+	mypy glon/
 
 format:
-	black gc/ tests/
-	isort gc/ tests/
+	black glon/ tests/
+	isort glon/ tests/
 
 type-check:
-	mypy gc/
+	mypy glon/
 
 # Build and distribution
 clean:
@@ -73,7 +73,7 @@ docs:
 
 # Example usage
 run-example:
-	python -c "from gc import GarbageCollector, MemoryProfiler; from gc.utils import analyze_memory_usage; print('=== Garbage Collection Demo ==='); gc_manager = GarbageCollector(); summary = gc_manager.get_memory_summary(); print(f'Memory Summary: {summary}'); print('\n=== Memory Profiling Demo ==='); profiler = MemoryProfiler(); profiler.take_snapshot('start'); data = [list(range(1000)) for _ in range(10)]; profiler.take_snapshot('after_data_creation'); comparison = profiler.compare_snapshots(0, 1); print(f'Memory change: {comparison[\"rss_diff\"]} bytes'); print('\n=== Memory Analysis Demo ==='); analysis = analyze_memory_usage(); print(f'Total objects: {analysis[\"objects\"][\"total_count\"]}'); print(f'Memory usage: {analysis[\"memory\"][\"rss\"]} bytes')"
+	python -c "from glon import GarbageCollector, MemoryProfiler; from glon.utils import analyze_memory_usage; print('=== Garbage Collection Demo ==='); gc_manager = GarbageCollector(); summary = gc_manager.get_memory_summary(); print(f'Memory Summary: {summary}'); print('\n=== Memory Profiling Demo ==='); profiler = MemoryProfiler(); profiler.take_snapshot('start'); data = [list(range(1000)) for _ in range(10)]; profiler.take_snapshot('after_data_creation'); comparison = profiler.compare_snapshots(0, 1); print(f'Memory change: {comparison[\"rss_diff\"]} bytes'); print('\n=== Memory Analysis Demo ==='); analysis = analyze_memory_usage(); print(f'Total objects: {analysis[\"objects\"][\"total_count\"]}'); print(f'Memory usage: {analysis[\"memory\"][\"rss\"]} bytes')"
 
 # Development workflow
 dev-setup: install-dev
@@ -87,14 +87,14 @@ quick-test:
 	python -m pytest tests/ -v
 
 quick-lint:
-	flake8 gc/ tests/
+	flake8 glon/ tests/
 
 # Package information
 info:
-	@echo "Package: gc"
-	@echo "Version: $$(python -c 'import gc; print(gc.__version__)')"
+	@echo "Package: glon"
+	@echo "Version: $$(python -c 'import glon; print(glon.__version__)')"
 	@echo "Python: $$(python --version)"
-	@echo "Location: $$(python -c 'import gc; print(gc.__file__)')"
+	@echo "Location: $$(python -c 'import glon; print(glon.__file__)')"
 
 # Dependencies check
 check-deps:
@@ -103,11 +103,11 @@ check-deps:
 
 # Performance testing
 perf-test:
-	python -c "import time; from gc import GarbageCollector, MemoryProfiler; print('Performance Test...'); gc_manager = GarbageCollector(); profiler = MemoryProfiler(); start_time = time.time(); [data for i in range(1000) for data in [[list(range(100)) for _ in range(10)]]]; gc_time = time.time() - start_time; print(f'Garbage collection time: {gc_time:.4f}s'); start_time = time.time(); [profiler.take_snapshot(f'snapshot_{i}') for i in range(100)]; prof_time = time.time() - start_time; print(f'Memory profiling time: {prof_time:.4f}s')"
+	python -c "import time; from glon import GarbageCollector, MemoryProfiler; print('Performance Test...'); gc_manager = GarbageCollector(); profiler = MemoryProfiler(); start_time = time.time(); [data for i in range(1000) for data in [[list(range(100)) for _ in range(10)]]]; gc_time = time.time() - start_time; print(f'Garbage collection time: {gc_time:.4f}s'); start_time = time.time(); [profiler.take_snapshot(f'snapshot_{i}') for i in range(100)]; prof_time = time.time() - start_time; print(f'Memory profiling time: {prof_time:.4f}s')"
 
 # Security check
 security:
-	bandit -r gc/
+	bandit -r glon/
 	safety check
 
 # All checks

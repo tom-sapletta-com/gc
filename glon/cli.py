@@ -1,5 +1,5 @@
 """
-CLI interface for gc package - Git Clone utility.
+CLI interface for glon package - Git Clone utility.
 """
 
 import os

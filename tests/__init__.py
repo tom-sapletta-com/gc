@@ -1,3 +1,3 @@
 """
-Tests for the gc package.
+Tests for the glon package.
 """

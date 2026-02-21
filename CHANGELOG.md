@@ -1,3 +1,32 @@
+## [0.1.12] - 2026-02-21
+
+### Summary
+
+refactor(docs): CLI interface improvements
+
+### Docs
+
+- docs: update README
+- docs: update TODO.md
+
+### Test
+
+- update tests/__init__.py
+
+### Build
+
+- update pyproject.toml
+
+### Config
+
+- config: update goal.yaml
+
+### Other
+
+- build: update Makefile
+- update glon/cli.py
+
+
 ## [0.1.11] - 2026-02-19
 
 ### Summary
@@ -122,10 +151,10 @@ refactor(goal): CLI interface improvements
 
 ### Other
 
-- update gc_toolkit/__init__.py
-- update gc_toolkit/cli.py
-- update gc_toolkit/core.py
-- update gc_toolkit/utils.py
+- update glon/__init__.py
+- update glon/cli.py
+- update glon/core.py
+- update glon/utils.py
 
 
 ## [0.1.5] - 2026-02-19
@@ -155,7 +184,7 @@ refactor(goal): CLI interface improvements
 
 ### Other
 
-- update gc/cli.py
+- update glon/cli.py
 
 
 ## [0.1.3] - 2026-02-19
@@ -215,7 +244,7 @@ feat(tests): deep code analysis engine with 6 supporting modules
 
 ### Other
 
-- update gc/utils.py
+- update glon/utils.py
 
 
 ## [1.0.1] - 2026-02-19
@@ -237,8 +266,8 @@ feat(docs): configuration management system
 
 - update .gitignore
 - update LICENSE
-- update gc/__init__.py
-- update gc/core.py
+- update glon/__init__.py
+- update glon/core.py
 - scripts: update project.sh
 
 

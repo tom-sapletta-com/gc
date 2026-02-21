@@ -1,10 +1,10 @@
-# gc
+# glon
 
 Python package for garbage collection utilities and memory management.
 
 ## Overview
 
-The `gc` package provides comprehensive tools and utilities for working with Python's garbage collector, memory profiling, and cleanup operations. It offers enhanced garbage collection control, memory monitoring, and debugging capabilities.
+The `glon` package provides comprehensive tools and utilities for working with Python's garbage collector, memory profiling, and cleanup operations. It offers enhanced garbage collection control, memory monitoring, and debugging capabilities.
 
 ## Features
 
@@ -18,14 +18,14 @@ The `gc` package provides comprehensive tools and utilities for working with Pyt
 ## Installation
 
 ```bash
-pip install gc
+pip install glon
 ```
 
 ### Development Installation
 
 ```bash
-git clone https://github.com/tom-sapletta/gc.git
-cd gc
+git clone https://github.com/tom-sapletta/glon.git
+cd glon
 pip install -e ".[dev]"
 ```
 
@@ -34,7 +34,7 @@ pip install -e ".[dev]"
 ### Basic Garbage Collection Control
 
 ```python
-from gc import GarbageCollector
+from glon import GarbageCollector
 
 # Create a garbage collector instance
 gc_manager = GarbageCollector()
@@ -51,7 +51,7 @@ print(summary)
 ### Memory Profiling
 
 ```python
-from gc import MemoryProfiler
+from glon import MemoryProfiler
 
 # Create a profiler instance
 profiler = MemoryProfiler()
@@ -73,7 +73,7 @@ print(f"Memory change: {comparison['rss_diff']} bytes")
 ### Memory Monitoring
 
 ```python
-from gc.utils import monitor_memory_usage
+from glon.utils import monitor_memory_usage
 
 # Monitor memory for 60 seconds
 samples = monitor_memory_usage(duration=60, interval=1.0)
@@ -131,13 +131,13 @@ pytest
 ### Code Formatting
 
 ```bash
-black gc/
+black glon/
 ```
 
 ### Type Checking
 
 ```bash
-mypy gc/
+mypy glon/
 ```
 
 ## License
