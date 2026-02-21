@@ -16,24 +16,24 @@ class TestParseGitUrl:
     
     def test_parse_ssh_url(self):
         """Test parsing SSH git URL."""
-        url = "git@github.com:tom-sapletta-com/gc.git"
+        url = "git@github.com:tom-sapletta-com/glon.git"
         result = parse_git_url(url)
         
-        assert result == ("tom-sapletta-com", "gc")
+        assert result == ("tom-sapletta-com", "glon")
     
     def test_parse_https_url_with_git(self):
         """Test parsing HTTPS git URL with .git extension."""
-        url = "https://github.com/tom-sapletta-com/gc.git"
+        url = "https://github.com/tom-sapletta-com/glon.git"
         result = parse_git_url(url)
         
-        assert result == ("tom-sapletta-com", "gc")
+        assert result == ("tom-sapletta-com", "glon")
     
     def test_parse_https_url_without_git(self):
         """Test parsing HTTPS git URL without .git extension."""
-        url = "https://github.com/tom-sapletta-com/gc"
+        url = "https://github.com/tom-sapletta-com/glon"
         result = parse_git_url(url)
         
-        assert result == ("tom-sapletta-com", "gc")
+        assert result == ("tom-sapletta-com", "glon")
     
     def test_parse_invalid_url(self):
         """Test parsing invalid URL."""
