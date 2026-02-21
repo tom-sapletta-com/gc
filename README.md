@@ -1,19 +1,18 @@
 # glon
 
-Python package for garbage collection utilities and memory management.
+Git Clone utility - Clone repositories to organized directory structure.
 
 ## Overview
 
-The `glon` package provides comprehensive tools and utilities for working with Python's garbage collector, memory profiling, and cleanup operations. It offers enhanced garbage collection control, memory monitoring, and debugging capabilities.
+The `glon` package provides a convenient CLI tool for cloning git repositories to an organized directory structure, as well as listing and managing your cloned projects.
 
 ## Features
 
-- **Enhanced Garbage Collection**: Control and monitor Python's garbage collector with detailed statistics
-- **Memory Profiling**: Track memory usage over time and analyze memory patterns
-- **Object Tracking**: Monitor specific objects using weak references
-- **Reference Cycle Detection**: Find and analyze reference cycles in your code
-- **Memory Analysis**: Comprehensive memory usage analysis and reporting
-- **Utility Functions**: Common garbage collection and memory management tasks
+- **Easy Cloning**: Clone git repositories with a single command
+- **Clipboard Integration**: Clone directly from clipboard URLs
+- **Grab from Clipboard**: Grab paths from clipboard (git URLs or local paths)
+- **List Projects**: List all cloned projects with time-based filtering
+- **Organized Structure**: Projects organized by owner/repo structure
 
 ## Installation
 
@@ -31,55 +30,88 @@ pip install -e ".[dev]"
 
 ## Quick Start
 
-### Basic Garbage Collection Control
+### Clone a Repository
 
-```python
-from glon import GarbageCollector
+```bash
+# Clone using git URL
+glon https://github.com/owner/repo.git
 
-# Create a garbage collector instance
-gc_manager = GarbageCollector()
-
-# Force garbage collection
-collected = gc_manager.collect()
-print(f"Collected {collected} objects")
-
-# Get memory summary
-summary = gc_manager.get_memory_summary()
-print(summary)
+# Or clone from clipboard (copies URL to clipboard first)
+glon
 ```
 
-### Memory Profiling
+### Grab from Clipboard
 
-```python
-from glon import MemoryProfiler
+The `grab` command reads a path from clipboard and processes it:
 
-# Create a profiler instance
-profiler = MemoryProfiler()
+```bash
+# Grab from clipboard - detects if it's a git URL or local path
+glon grab
 
-# Take a memory snapshot
-profiler.take_snapshot("before_operation")
-
-# Your code here...
-data = [list(range(1000)) for _ in range(100)]
-
-# Take another snapshot
-profiler.take_snapshot("after_operation")
-
-# Compare snapshots
-comparison = profiler.compare_snapshots(0, 1)
-print(f"Memory change: {comparison['rss_diff']} bytes")
+# With options
+glon grab --base-path ~/projects
+glon grab --dry-run
+glon grab --verbose
 ```
 
-### Memory Monitoring
+### List Projects
 
-```python
-from glon.utils import monitor_memory_usage
+List all cloned projects in your base directory:
 
-# Monitor memory for 60 seconds
-samples = monitor_memory_usage(duration=60, interval=1.0)
+```bash
+# List all projects
+glon list
+glon ls
 
-for sample in samples:
-    print(f"Memory: {sample['rss']} bytes, Objects: {sample['objects_count']}")
+# Filter by time
+glon list "last week"
+glon list "last month"
+glon list "last year"
+glon list 30  # last 30 days
+
+# Verbose output with full paths
+glon list --verbose
+glon ls -v
+```
+
+## CLI Commands
+
+### Clone
+
+Clone a git repository to the organized directory structure (default: ~/github):
+
+```bash
+glon <git-url>              # Clone from URL
+glon clone <git-url>        # Same as above (explicit)
+glon --dry-run <url>        # Show what would be done
+glon --base-path ~/my-projects <url>  # Custom base path
+```
+
+### Grab
+
+Grab a path from clipboard:
+
+```bash
+glon grab                   # Read from clipboard and process
+glon grab --verbose         # Show detailed output
+glon grab --dry-run         # Preview without executing
+glon grab --base-path ~/my-projects  # Custom output path
+```
+
+### List (or LS)
+
+List all cloned projects:
+
+```bash
+glon list                   # List all projects
+glon ls                     # Short alias
+glon list "last week"       # Projects modified last week
+glon list "last month"      # Projects modified last month
+glon list "last year"       # Projects modified last year
+glon list 30                # Projects modified last 30 days
+glon list --verbose         # Show full paths and details
+glon ls -v                  # Verbose output
+glon list --base-path ~/my-projects  # Custom base path
 ```
 
 ## API Reference

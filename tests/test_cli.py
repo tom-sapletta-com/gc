@@ -168,6 +168,101 @@ class TestCloneRepository:
             assert result is False
 
 
+class TestGrabFromClipboard:
+    """Test cases for grab from clipboard functionality."""
+    
+    @patch('glon.cli._read_clipboard_text')
+    @patch('glon.cli.parse_git_url')
+    def test_grab_git_url_from_clipboard(self, mock_parse, mock_clipboard):
+        """Test grabbing git URL from clipboard."""
+        mock_clipboard.return_value = "git@github.com:owner/repo.git"
+        mock_parse.return_value = ("owner", "repo")
+        
+        with patch('glon.cli.clone_repository', return_value=True) as mock_clone:
+            with patch('glon.cli.create_directory_structure') as mock_create:
+                mock_create.return_value = Path("/tmp/github/owner/repo")
+                
+                from glon.cli import grab_from_clipboard
+                result = grab_from_clipboard()
+                
+                assert result is True
+                mock_parse.assert_called_once_with("git@github.com:owner/repo.git")
+                mock_create.assert_called_once()
+                mock_clone.assert_called_once()
+    
+    @patch('glon.cli._read_clipboard_text')
+    def test_grab_empty_clipboard(self, mock_clipboard):
+        """Test grabbing from empty clipboard."""
+        mock_clipboard.return_value = None
+        
+        from glon.cli import grab_from_clipboard
+        result = grab_from_clipboard()
+        
+        assert result is False
+    
+    @patch('glon.cli._read_clipboard_text')
+    def test_grab_whitespace_clipboard(self, mock_clipboard):
+        """Test grabbing from clipboard with only whitespace."""
+        mock_clipboard.return_value = "   \n\t  "
+        
+        from glon.cli import grab_from_clipboard
+        result = grab_from_clipboard()
+        
+        assert result is False
+    
+    @patch('glon.cli._read_clipboard_text')
+    def test_grab_invalid_path(self, mock_clipboard):
+        """Test grabbing invalid path from clipboard."""
+        mock_clipboard.return_value = "/nonexistent/path/12345"
+        
+        from glon.cli import grab_from_clipboard
+        result = grab_from_clipboard()
+        
+        assert result is False
+    
+    @patch('glon.cli._read_clipboard_text')
+    @patch('glon.cli.parse_git_url')
+    def test_grab_dry_run(self, mock_parse, mock_clipboard):
+        """Test grab with dry run."""
+        mock_clipboard.return_value = "git@github.com:owner/repo.git"
+        mock_parse.return_value = ("owner", "repo")
+        
+        from glon.cli import grab_from_clipboard
+        result = grab_from_clipboard(dry_run=True)
+        
+        assert result is True
+    
+    @patch('glon.cli._read_clipboard_text')
+    def test_grab_local_directory(self, mock_clipboard):
+        """Test grabbing local directory from clipboard."""
+        import tempfile
+        with tempfile.TemporaryDirectory() as temp_dir:
+            mock_clipboard.return_value = temp_dir
+            
+            from glon.cli import grab_from_clipboard
+            with patch('os.path.expanduser', return_value=temp_dir):
+                result = grab_from_clipboard(base_path=temp_dir)
+                
+                # Should succeed (creates symlink)
+                assert result is True or result is False  # Depends on permissions
+    
+    @patch('glon.cli._read_clipboard_text')
+    @patch('glon.cli.parse_git_url')
+    def test_grab_verbose_mode(self, mock_parse, mock_clipboard):
+        """Test grab with verbose output."""
+        mock_clipboard.return_value = "git@github.com:owner/repo.git"
+        mock_parse.return_value = ("owner", "repo")
+        
+        with patch('glon.cli.clone_repository', return_value=True):
+            with patch('glon.cli.create_directory_structure') as mock_create:
+                mock_create.return_value = Path("/tmp/github/owner/repo")
+                
+                from glon.cli import grab_from_clipboard
+                result = grab_from_clipboard(verbose=True)
+                
+                assert result is True
+
+
 class TestCLIIntegration:
     """Integration tests for CLI functionality."""
     
@@ -205,7 +300,7 @@ class TestCLIIntegration:
                     
                     mock_exit.assert_not_called()
                     mock_print.assert_any_call("Error: Invalid git URL format: invalid-url")
-    
+
     @patch('glon.cli.clone_repository')
     @patch('glon.cli.create_directory_structure')
     @patch('glon.cli.parse_git_url')

@@ -7,8 +7,9 @@ import sys
 import subprocess
 import argparse
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 import re
+from datetime import datetime, timedelta
 
 
 def _read_clipboard_text() -> Optional[str]:
@@ -149,8 +150,357 @@ def clone_repository(url: str, target_dir: Path) -> bool:
         return False
 
 
+def grab_from_clipboard(base_path: Optional[str] = None, dry_run: bool = False, verbose: bool = False) -> bool:
+    """
+    Grab path from clipboard and process it.
+    
+    Reads from clipboard and determines if it's:
+    - A git URL → clone it
+    - A local path → copy/symlink to organized structure
+    
+    Args:
+        base_path: Base path for cloning (default: ~/github)
+        dry_run: Show what would be done without actually doing it
+        verbose: Verbose output
+        
+    Returns:
+        True if successful, False otherwise
+    """
+    # Try to read from clipboard
+    clipboard_text = _read_clipboard_text()
+    
+    if clipboard_text is None:
+        print("Error: Clipboard is empty or could not be read.")
+        return False
+    
+    clipboard_text = clipboard_text.strip()
+    
+    if not clipboard_text:
+        print("Error: Clipboard is empty.")
+        return False
+    
+    if verbose:
+        print(f"Clipboard content: {clipboard_text}")
+    
+    # Check if it's a git URL
+    parsed = parse_git_url(clipboard_text)
+    if parsed:
+        owner, repo = parsed
+        if verbose:
+            print(f"Detected git URL - Owner: {owner}, Repository: {repo}")
+        
+        target_dir = create_directory_structure(owner, repo, base_path)
+        
+        if verbose:
+            print(f"Target directory: {target_dir}")
+        
+        if dry_run:
+            print(f"Would clone {clipboard_text} to {target_dir}")
+            return True
+        
+        success = clone_repository(clipboard_text, target_dir)
+        
+        if success:
+            print(f"Repository ready at: {target_dir}")
+            return True
+        return False
+    
+    # It's a local path - check if it exists
+    source_path = Path(clipboard_text)
+    
+    if not source_path.exists():
+        print(f"Error: Path does not exist: {clipboard_text}")
+        print("Note: Path must be a valid git URL or existing local directory.")
+        return False
+    
+    if source_path.is_dir():
+        # It's a directory - get the name
+        dir_name = source_path.name
+    else:
+        # It's a file - get the name without extension
+        dir_name = source_path.stem
+    
+    if verbose:
+        print(f"Detected local path - Name: {dir_name}")
+    
+    # Create target directory in base_path
+    if base_path is None:
+        base_path = os.path.expanduser("~/github")
+    
+    target_dir = Path(base_path) / dir_name
+    target_dir.mkdir(parents=True, exist_ok=True)
+    
+    if verbose:
+        print(f"Target directory: {target_dir}")
+    
+    if dry_run:
+        print(f"Would copy/symlink {clipboard_text} to {target_dir}")
+        return True
+    
+    # Check if target is empty
+    if any(target_dir.iterdir()):
+        print(f"Warning: Directory {target_dir} is not empty. Skipping.")
+        return False
+    
+    try:
+        # Create symlink instead of copying
+        if source_path.is_dir():
+            # For directories, create a symlink to the source
+            link_path = target_dir / source_path.name
+            if link_path.exists() or link_path.is_symlink():
+                print(f"Symlink already exists at {link_path}")
+            else:
+                link_path.symlink_to(source_path.resolve())
+                print(f"Created symlink: {link_path} -> {source_path}")
+        else:
+            # For files, copy them
+            import shutil
+            shutil.copy2(source_path, target_dir / source_path.name)
+            print(f"Copied {source_path} to {target_dir}")
+        
+        print(f"Path ready at: {target_dir}")
+        return True
+        
+    except Exception as e:
+        print(f"Error processing path: {e}")
+        return False
+
+
+def parse_time_filter(filter_str: str) -> Optional[datetime]:
+    """
+    Parse time filter string like 'last month', 'last week', 'today'.
+    
+    Args:
+        filter_str: Time filter string
+        
+    Returns:
+        datetime object or None if invalid
+    """
+    filter_str = filter_str.lower().strip()
+    now = datetime.now()
+    
+    if filter_str in ("today", "last day", "1 day"):
+        return now - timedelta(days=1)
+    elif filter_str in ("last week", "1 week", "week"):
+        return now - timedelta(weeks=1)
+    elif filter_str in ("last month", "1 month", "month"):
+        return now - timedelta(days=30)
+    elif filter_str in ("last 3 months", "3 months"):
+        return now - timedelta(days=90)
+    elif filter_str in ("last 6 months", "6 months"):
+        return now - timedelta(days=180)
+    elif filter_str in ("last year", "1 year", "year"):
+        return now - timedelta(days=365)
+    elif filter_str in ("all", "everything", "*"):
+        return None
+    
+    return None
+
+
+def list_projects(base_path: Optional[str] = None, time_filter: Optional[str] = None, verbose: bool = False, limit: Optional[int] = None) -> bool:
+    """
+    List all projects in the base path.
+    
+    Args:
+        base_path: Base path to search (default: ~/github)
+        time_filter: Filter by time (e.g., 'last month', 'last week', 'today')
+        verbose: Verbose output
+        limit: Limit number of results
+        
+    Returns:
+        True if successful, False otherwise
+    """
+    if base_path is None:
+        base_path = os.path.expanduser("~/github")
+    
+    base_path_obj = Path(base_path)
+    
+    if not base_path_obj.exists():
+        print(f"Error: Base path does not exist: {base_path}")
+        return False
+    
+    # Parse time filter
+    filter_date = None
+    if time_filter:
+        filter_date = parse_time_filter(time_filter)
+        if time_filter and filter_date is None and time_filter not in ("all", "everything", "*"):
+            # Check if it's a number (e.g., "30" for 30 days)
+            try:
+                days = int(time_filter)
+                filter_date = now = datetime.now() - timedelta(days=days)
+            except ValueError:
+                print(f"Warning: Unknown time filter '{time_filter}', showing all projects")
+    
+    # Collect all projects
+    projects = []
+    
+    for owner_dir in base_path_obj.iterdir():
+        if not owner_dir.is_dir():
+            continue
+        
+        for repo_dir in owner_dir.iterdir():
+            if not repo_dir.is_dir():
+                continue
+            
+            # Get modification time
+            mtime = datetime.fromtimestamp(repo_dir.stat().st_mtime)
+            
+            # Apply time filter
+            if filter_date and mtime < filter_date:
+                continue
+            
+            projects.append({
+                "path": repo_dir,
+                "owner": owner_dir.name,
+                "repo": repo_dir.name,
+                "mtime": mtime
+            })
+    
+    if not projects:
+        print(f"No projects found in {base_path}")
+        if time_filter:
+            print(f"  (No projects modified {time_filter})")
+        return True
+    
+    # Sort by modification time (newest first)
+    projects.sort(key=lambda x: x["mtime"], reverse=True)
+    
+    # Apply limit
+    total_count = len(projects)
+    if limit:
+        projects = projects[:limit]
+    
+    # Print header
+    print(f"\nFound {total_count} project(s) in {base_path}")
+    if time_filter:
+        print(f"Filtered by: {time_filter}")
+    if limit:
+        print(f"Showing {len(projects)} result(s)")
+    print("-" * 80)
+    
+    # Print projects
+    for project in projects:
+        path = project["path"]
+        owner = project["owner"]
+        repo = project["repo"]
+        mtime = project["mtime"]
+        
+        # Format date
+        date_str = mtime.strftime("%Y-%m-%d %H:%M")
+        
+        # Check if it's a git repository
+        is_git = (path / ".git").exists()
+        
+        if verbose:
+            print(f"{owner}/{repo}")
+            print(f"  Path: {path}")
+            print(f"  Modified: {date_str}")
+            print(f"  Git: {'Yes' if is_git else 'No'}")
+            print()
+        else:
+            git_marker = "✓" if is_git else "✗"
+            print(f"{git_marker} {owner}/{repo} - {date_str}")
+    
+    return True
+
+
 def main():
     """Main CLI entry point."""
+    # Check if list command is being used (could be "list", "ls", or "glon list", "glon ls")
+    if "list" in sys.argv or "ls" in sys.argv:
+        # Filter out 'list' or 'ls' from sys.argv for the list parser
+        list_args = [arg for arg in sys.argv[1:] if arg not in ("list", "ls")]
+        
+        # Simple parser for list command
+        parser = argparse.ArgumentParser(
+            description="List all cloned projects",
+            prog="glon list"
+        )
+        parser.add_argument(
+            "--base-path",
+            help="Base path to search (default: ~/github)",
+            default=None
+        )
+        parser.add_argument(
+            "--last",
+            dest="last",
+            choices=["today", "week", "month", "3months", "6months", "year"],
+            help="Filter by time: today, week, month, 3months, 6months, year"
+        )
+        parser.add_argument(
+            "filter",
+            nargs="*",
+            default=None,
+            help="Time filter (e.g., 'last month', 'last week', 'today', '30' for days)"
+        )
+        parser.add_argument(
+            "--verbose",
+            "-v",
+            action="store_true",
+            help="Verbose output with full paths"
+        )
+        parser.add_argument(
+            "--limit",
+            type=int,
+            default=None,
+            help="Limit number of results"
+        )
+        args = parser.parse_args(list_args)
+        
+        # Use --last if provided, otherwise use positional filter
+        time_filter = None
+        if args.last:
+            time_filter = f"last {args.last}"
+        elif args.filter:
+            # Join filter words back together (e.g., "last week" -> "last week")
+            time_filter = " ".join(args.filter)
+        
+        list_projects(
+            base_path=args.base_path,
+            time_filter=time_filter,
+            verbose=args.verbose,
+            limit=args.limit
+        )
+        return
+    
+    # Check if grab command is being used (could be "grab" or "glon grab")
+    if "grab" in sys.argv:
+        # Filter out 'grab' from sys.argv for the grab parser
+        grab_args = [arg for arg in sys.argv[1:] if arg != "grab"]
+        
+        # Simple parser for grab command
+        parser = argparse.ArgumentParser(
+            description="Grab path from clipboard and process it",
+            prog="glon grab"
+        )
+        parser.add_argument(
+            "--base-path",
+            help="Base path for output (default: ~/github)",
+            default=None
+        )
+        parser.add_argument(
+            "--dry-run",
+            action="store_true",
+            help="Show what would be done without actually doing it"
+        )
+        parser.add_argument(
+            "--verbose",
+            action="store_true",
+            help="Verbose output"
+        )
+        args = parser.parse_args(grab_args)
+        
+        success = grab_from_clipboard(
+            base_path=args.base_path,
+            dry_run=args.dry_run,
+            verbose=args.verbose
+        )
+        return
+    
+    # Check if clone subcommand is being used
+    use_clone_subcommand = len(sys.argv) > 1 and sys.argv[1] == "clone"
+    
+    # Create main parser with URL as positional argument for backward compatibility
     parser = argparse.ArgumentParser(
         description="Git Clone utility - Clone repositories to organized directory structure",
         prog="glon"
@@ -160,7 +510,7 @@ def main():
         "url",
         nargs="?",
         default=None,
-        help="Git repository URL (SSH or HTTPS). If omitted, glon will try to use clipboard."
+        help="Git repository URL (SSH or HTTPS). If omitted, will try to use clipboard."
     )
     
     parser.add_argument(
@@ -182,7 +532,13 @@ def main():
     )
     
     args = parser.parse_args()
-
+    
+    # If clone subcommand was used, remove it from args handling
+    if use_clone_subcommand:
+        # The URL would be in sys.argv[2] if provided
+        if args.url is None and len(sys.argv) > 2:
+            args.url = sys.argv[2]
+    
     if args.url is None:
         args.url = _clipboard_url_candidate()
         if args.url is None:
