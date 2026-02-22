@@ -1,3 +1,14 @@
+## [0.1.18] - 2026-02-22
+
+### Summary
+
+feat(goal): CLI interface improvements
+
+### Other
+
+- update glon/cli.py
+
+
 ## [0.1.17] - 2026-02-22
 
 ### Summary

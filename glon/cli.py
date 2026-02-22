@@ -519,13 +519,46 @@ def main():
         # Filter out 'open' from sys.argv
         open_args = [arg for arg in sys.argv[1:] if arg != "open"]
         
+        # Get all available projects
+        all_projects = get_all_projects()
+        
+        # If no project specified, show list and return
+        if not open_args or open_args[0].startswith("-"):
+            print("Available projects:")
+            for project in all_projects:
+                print(f"  {project}")
+            print("\nUsage: glon open <project>")
+            print("Example: glon open tom-sapletta-com/xeen")
+            return
+        
+        # Get the project name (first non-flag argument)
+        project_name = open_args[0]
+        
+        # Filter projects that match the input (case-insensitive partial match)
+        matching_projects = [p for p in all_projects if project_name.lower() in p.lower()]
+        
+        if not matching_projects:
+            print(f"No projects found matching: {project_name}")
+            print("\nAvailable projects:")
+            for project in all_projects:
+                print(f"  {project}")
+            return
+        
+        # If there's exactly one match, use it
+        if len(matching_projects) == 1:
+            project_to_open = matching_projects[0]
+        else:
+            # Multiple matches - show them and ask user to choose
+            print(f"Projects matching '{project_name}':")
+            for i, project in enumerate(matching_projects, 1):
+                print(f"  {i}. {project}")
+            # Use the first match for now
+            project_to_open = matching_projects[0]
+        
         parser = argparse.ArgumentParser(
             description="Open project in IDE",
             prog="glon open"
         )
-        
-        # Get all projects for autocomplete
-        all_projects = get_all_projects()
         
         # Add project argument with choices for autocomplete
         project_arg = parser.add_argument(
@@ -550,7 +583,7 @@ def main():
         
         args = parser.parse_args(open_args)
         
-        open_in_ide(args.project, args.ide)
+        open_in_ide(project_to_open, args.ide)
         return
     
     # Check if list command is being used (could be "list", "ls", or "glon list", "glon ls")
