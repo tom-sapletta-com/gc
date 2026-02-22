@@ -399,7 +399,7 @@ def list_projects(base_path: Optional[str] = None, time_filter: Optional[str] = 
             print()
         else:
             git_marker = "✓" if is_git else "✗"
-            print(f"{git_marker} {owner}/{repo} - {date_str}")
+            print(f"{date_str} {git_marker} {owner}/{repo}")
     
     return True
 

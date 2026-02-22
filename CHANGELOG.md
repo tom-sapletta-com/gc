@@ -1,3 +1,14 @@
+## [0.1.15] - 2026-02-22
+
+### Summary
+
+refactor(goal): CLI interface improvements
+
+### Other
+
+- update glon/cli.py
+
+
 ## [0.1.14] - 2026-02-21
 
 ### Summary
