@@ -58,7 +58,7 @@ def monitor_memory_usage(duration: int = 60, interval: float = 1.0) -> List[Dict
     Returns:
         List of memory usage samples
     """
-    if psutil is None or sys.modules.get('psutil') is None:
+    if psutil is None:
         raise ImportError("psutil is required for memory monitoring. Install with: pip install psutil")
     
     process = psutil.Process(psutil.os.getpid())
@@ -181,7 +181,7 @@ def analyze_memory_usage() -> Dict[str, Any]:
     Returns:
         Dictionary with memory analysis
     """
-    if psutil is None or sys.modules.get('psutil') is None:
+    if psutil is None:
         raise ImportError("psutil is required for memory analysis. Install with: pip install psutil")
     
     process = psutil.Process(psutil.os.getpid())

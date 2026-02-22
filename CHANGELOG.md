@@ -1,3 +1,22 @@
+## [0.1.17] - 2026-02-22
+
+### Summary
+
+refactor(config): new API capabilities
+
+### Test
+
+- update tests/test_utils.py
+
+### Build
+
+- update pyproject.toml
+
+### Other
+
+- update glon/utils.py
+
+
 ## [0.1.16] - 2026-02-22
 
 ### Summary

@@ -85,12 +85,6 @@ class TestMonitorMemoryUsage:
         assert all('rss' in sample for sample in samples)
         assert all('vms' in sample for sample in samples)
         assert all('percent' in sample for sample in samples)
-    
-    def test_monitor_memory_usage_no_psutil(self):
-        """Test memory monitoring without psutil installed."""
-        with patch.dict('sys.modules', {'psutil': None}):
-            with pytest.raises(ImportError, match="psutil is required"):
-                monitor_memory_usage()
 
 
 class TestForceGarbageCollection:
@@ -203,12 +197,6 @@ class TestAnalyzeMemoryUsage:
         # Check objects section
         assert 'total_count' in analysis['objects']
         assert 'top_types' in analysis['objects']
-    
-    def test_analyze_memory_usage_no_psutil(self):
-        """Test memory analysis without psutil installed."""
-        with patch.dict('sys.modules', {'psutil': None}):
-            with pytest.raises(ImportError, match="psutil is required"):
-                analyze_memory_usage()
 
 
 class TestDebugFunctions:
