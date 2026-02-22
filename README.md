@@ -12,6 +12,7 @@ The `glon` package provides a convenient CLI tool for cloning git repositories t
 - **Clipboard Integration**: Clone directly from clipboard URLs
 - **Grab from Clipboard**: Grab paths from clipboard (git URLs or local paths)
 - **List Projects**: List all cloned projects with time-based filtering
+- **Open in IDE**: Open projects directly in PyCharm or other IDEs
 - **Organized Structure**: Projects organized by owner/repo structure
 
 ## Installation
@@ -112,6 +113,17 @@ glon list 30                # Projects modified last 30 days
 glon list --verbose         # Show full paths and details
 glon ls -v                  # Verbose output
 glon list --base-path ~/my-projects  # Custom base path
+```
+
+### Open
+
+Open a project in your IDE (PyCharm, VSCode, etc.):
+
+```bash
+glon open owner/repo        # Open in PyCharm (default)
+glon open owner/repo --ide vscode    # Open in VS Code
+glon open /full/path/to/project     # Open with full path
+glon open ~/github/owner/repo       # Open with expanded path
 ```
 
 ## API Reference

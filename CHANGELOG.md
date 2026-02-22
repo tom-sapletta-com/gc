@@ -1,3 +1,22 @@
+## [0.1.16] - 2026-02-22
+
+### Summary
+
+feat(docs): CLI interface improvements
+
+### Docs
+
+- docs: update README
+
+### Build
+
+- update pyproject.toml
+
+### Other
+
+- update glon/cli.py
+
+
 ## [0.1.15] - 2026-02-22
 
 ### Summary

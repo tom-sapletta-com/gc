@@ -11,6 +11,47 @@ from typing import Optional, List
 import re
 from datetime import datetime, timedelta
 
+# Try to import argcomplete for tab completion
+try:
+    import argcomplete
+    from argcomplete.completers import ChoicesCompleter
+    ARGCOMPLETE_AVAILABLE = True
+except ImportError:
+    ARGCOMPLETE_AVAILABLE = False
+
+
+def get_all_projects(base_path: Optional[str] = None) -> List[str]:
+    """
+    Get all available projects in the base path.
+    
+    Args:
+        base_path: Base path to search (default: ~/github)
+        
+    Returns:
+        List of project paths in "owner/repo" format
+    """
+    if base_path is None:
+        base_path = os.path.expanduser("~/github")
+    
+    base_path_obj = Path(base_path)
+    projects = []
+    
+    if not base_path_obj.exists():
+        return projects
+    
+    for owner_dir in base_path_obj.iterdir():
+        if not owner_dir.is_dir():
+            continue
+        
+        for repo_dir in owner_dir.iterdir():
+            if not repo_dir.is_dir():
+                continue
+            
+            # Add in "owner/repo" format
+            projects.append(f"{owner_dir.name}/{repo_dir.name}")
+    
+    return sorted(projects)
+
 
 def _read_clipboard_text() -> Optional[str]:
     try:
@@ -404,8 +445,114 @@ def list_projects(base_path: Optional[str] = None, time_filter: Optional[str] = 
     return True
 
 
+def open_in_ide(project_path: str, ide: str = "pycharm") -> bool:
+    """
+    Open a project in an IDE.
+    
+    Args:
+        project_path: Path to project (e.g., "owner/repo" or full path)
+        ide: IDE to use (default: pycharm)
+        
+    Returns:
+        True if successful, False otherwise
+    """
+    # Check if it's in "owner/repo" format
+    if "/" in project_path and not os.path.isabs(project_path):
+        # It's in owner/repo format, convert to full path
+        parts = project_path.split("/")
+        if len(parts) == 2:
+            owner, repo = parts
+            base_path = os.path.expanduser("~/github")
+            full_path = Path(base_path) / owner / repo
+        else:
+            print(f"Error: Invalid project path format: {project_path}")
+            return False
+    else:
+        # It's a full path
+        full_path = Path(project_path)
+    
+    # Expand user path
+    full_path = Path(os.path.expanduser(full_path))
+    
+    # Check if path exists
+    if not full_path.exists():
+        print(f"Error: Project path does not exist: {full_path}")
+        return False
+    
+    if not full_path.is_dir():
+        print(f"Error: Project path is not a directory: {full_path}")
+        return False
+    
+    # Try to open in the IDE
+    ide_commands = {
+        "pycharm": ["pycharm", str(full_path)],
+        "idea": ["idea", str(full_path)],
+        "vscode": ["code", str(full_path)],
+        "code": ["code", str(full_path)],
+        "webstorm": ["webstorm", str(full_path)],
+        "goland": ["goland", str(full_path)],
+        "rider": ["rider", str(full_path)],
+    }
+    
+    cmd = ide_commands.get(ide.lower())
+    if cmd is None:
+        print(f"Error: Unknown IDE: {ide}")
+        print(f"Supported IDEs: {', '.join(ide_commands.keys())}")
+        return False
+    
+    try:
+        subprocess.Popen(cmd)
+        print(f"Opened {full_path} in {ide}")
+        return True
+    except FileNotFoundError:
+        print(f"Error: {ide} is not installed or not in PATH")
+        return False
+    except Exception as e:
+        print(f"Error opening project: {e}")
+        return False
+
+
 def main():
     """Main CLI entry point."""
+    # Check if open command is being used
+    if "open" in sys.argv:
+        # Filter out 'open' from sys.argv
+        open_args = [arg for arg in sys.argv[1:] if arg != "open"]
+        
+        parser = argparse.ArgumentParser(
+            description="Open project in IDE",
+            prog="glon open"
+        )
+        
+        # Get all projects for autocomplete
+        all_projects = get_all_projects()
+        
+        # Add project argument with choices for autocomplete
+        project_arg = parser.add_argument(
+            "project",
+            help="Project path (owner/repo or full path)"
+        )
+        
+        # If argcomplete is available and we have projects, set up autocomplete
+        if ARGCOMPLETE_AVAILABLE and all_projects:
+            project_arg.completer = ChoicesCompleter(all_projects)
+        
+        parser.add_argument(
+            "--ide",
+            default="pycharm",
+            choices=["pycharm", "idea", "vscode", "code", "webstorm", "goland", "rider"],
+            help="IDE to use (pycharm, idea, vscode, webstorm, goland, rider)"
+        )
+        
+        # If argcomplete is available, activate it
+        if ARGCOMPLETE_AVAILABLE:
+            argcomplete.autocomplete(parser)
+        
+        args = parser.parse_args(open_args)
+        
+        open_in_ide(args.project, args.ide)
+        return
+    
     # Check if list command is being used (could be "list", "ls", or "glon list", "glon ls")
     if "list" in sys.argv or "ls" in sys.argv:
         # Filter out 'list' or 'ls' from sys.argv for the list parser
