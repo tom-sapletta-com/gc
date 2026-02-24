@@ -1,3 +1,14 @@
+## [0.1.22] - 2026-02-24
+
+### Summary
+
+refactor(glon): core module improvements
+
+### Other
+
+- update glon/__init__.py
+
+
 ## [0.1.21] - 2026-02-24
 
 ### Summary
