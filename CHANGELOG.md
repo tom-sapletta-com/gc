@@ -1,3 +1,15 @@
+## [0.1.19] - 2026-02-24
+
+### Summary
+
+refactor(goal): CLI interface improvements
+
+### Other
+
+- scripts: update activate.sh
+- update glon/cli.py
+
+
 ## [0.1.18] - 2026-02-22
 
 ### Summary

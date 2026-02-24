@@ -30,6 +30,20 @@ def get_all_projects(base_path: Optional[str] = None) -> List[str]:
     Returns:
         List of project paths in "owner/repo" format
     """
+    projects_with_time = get_all_projects_with_time(base_path)
+    return sorted([p["name"] for p in projects_with_time])
+
+
+def get_all_projects_with_time(base_path: Optional[str] = None) -> List[dict]:
+    """
+    Get all available projects with modification time.
+    
+    Args:
+        base_path: Base path to search (default: ~/github)
+        
+    Returns:
+        List of dicts with project info including modification time
+    """
     if base_path is None:
         base_path = os.path.expanduser("~/github")
     
@@ -47,10 +61,20 @@ def get_all_projects(base_path: Optional[str] = None) -> List[str]:
             if not repo_dir.is_dir():
                 continue
             
-            # Add in "owner/repo" format
-            projects.append(f"{owner_dir.name}/{repo_dir.name}")
+            try:
+                mtime = datetime.fromtimestamp(repo_dir.stat().st_mtime)
+            except OSError:
+                mtime = datetime.min
+            
+            projects.append({
+                "name": f"{owner_dir.name}/{repo_dir.name}",
+                "path": repo_dir,
+                "mtime": mtime,
+                "owner": owner_dir.name,
+                "repo": repo_dir.name
+            })
     
-    return sorted(projects)
+    return sorted(projects, key=lambda x: x["mtime"], reverse=True)
 
 
 def _read_clipboard_text() -> Optional[str]:
@@ -81,6 +105,25 @@ def _read_clipboard_text() -> Optional[str]:
         if text:
             return text
 
+    return None
+
+
+def _extract_git_url_from_text(text: str) -> Optional[str]:
+    """
+    Extract git URL from text that may contain multiple lines.
+    
+    Args:
+        text: Text that may contain a git URL
+        
+    Returns:
+        Git URL string or None if not found
+    """
+    # Split into lines and check each line
+    lines = text.strip().split('\n')
+    for line in lines:
+        line = line.strip()
+        if parse_git_url(line) is not None:
+            return line
     return None
 
 
@@ -522,8 +565,61 @@ def main():
         # Get all available projects
         all_projects = get_all_projects()
         
-        # If no project specified, show list and return
+        # If no project specified, check clipboard first
         if not open_args or open_args[0].startswith("-"):
+            # Try to get clipboard content
+            clipboard_content = _read_clipboard_text()
+            if clipboard_content:
+                clipboard_content = clipboard_content.strip()
+                # Check if clipboard contains a git URL
+                parsed = parse_git_url(clipboard_content)
+                if parsed:
+                    owner, repo = parsed
+                    project_name = f"{owner}/{repo}"
+                    print(f"Detected git URL in clipboard: {clipboard_content}")
+                    
+                    # Check if project already exists
+                    base_path = os.path.expanduser("~/github")
+                    project_path = Path(base_path) / owner / repo
+                    
+                    if project_path.exists():
+                        print(f"Project already exists at: {project_path}")
+                        # Continue with opening this project
+                    else:
+                        print(f"Project not found locally. Cloning first...")
+                        # Clone the repository
+                        target_dir = create_directory_structure(owner, repo)
+                        success = clone_repository(clipboard_content, target_dir)
+                        if success:
+                            project_path = target_dir
+                        else:
+                            print("Failed to clone repository. Showing available projects:")
+                            for project in all_projects:
+                                print(f"  {project}")
+                            print("\nUsage: glon open <project>")
+                            print("Example: glon open tom-sapletta-com/xeen")
+                            return
+                    
+                    # Parse IDE arguments if any
+                    parser = argparse.ArgumentParser(
+                        description="Open project in IDE",
+                        prog="glon open"
+                    )
+                    parser.add_argument(
+                        "--ide",
+                        default="pycharm",
+                        choices=["pycharm", "idea", "vscode", "code", "webstorm", "goland", "rider"],
+                        help="IDE to use (pycharm, idea, vscode, webstorm, goland, rider)"
+                    )
+                    
+                    # Filter IDE args from open_args
+                    ide_args = [arg for arg in open_args if arg.startswith("--")]
+                    args = parser.parse_args(ide_args)
+                    
+                    open_in_ide(str(project_path), args.ide)
+                    return
+            
+            # No valid clipboard content, show available projects
             print("Available projects:")
             for project in all_projects:
                 print(f"  {project}")
@@ -534,26 +630,79 @@ def main():
         # Get the project name (first non-flag argument)
         project_name = open_args[0]
         
-        # Filter projects that match the input (case-insensitive partial match)
-        matching_projects = [p for p in all_projects if project_name.lower() in p.lower()]
+        # Get all projects with their modification times
+        all_projects_with_time = get_all_projects_with_time()
         
-        if not matching_projects:
+        # Filter projects that match the input (case-insensitive partial match)
+        matching_projects_with_time = [
+            p for p in all_projects_with_time 
+            if project_name.lower() in p["name"].lower()
+        ]
+        
+        if not matching_projects_with_time:
             print(f"No projects found matching: {project_name}")
             print("\nAvailable projects:")
             for project in all_projects:
                 print(f"  {project}")
             return
         
+        # Get project names from matches
+        matching_projects = [p["name"] for p in matching_projects_with_time]
+        
         # If there's exactly one match, use it
         if len(matching_projects) == 1:
             project_to_open = matching_projects[0]
         else:
-            # Multiple matches - show them and ask user to choose
-            print(f"Projects matching '{project_name}':")
-            for i, project in enumerate(matching_projects, 1):
-                print(f"  {i}. {project}")
-            # Use the first match for now
-            project_to_open = matching_projects[0]
+            # Multiple matches - use smart selection
+            now = datetime.now()
+            today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+            yesterday = today - timedelta(days=1)
+            
+            # Check if any matching project was modified today
+            today_projects = [p for p in matching_projects_with_time if p["mtime"] >= today]
+            yesterday_projects = [p for p in matching_projects_with_time if p["mtime"] >= yesterday]
+            
+            if today_projects:
+                # Use the most recently modified project from today
+                most_recent = max(today_projects, key=lambda x: x["mtime"])
+                project_to_open = most_recent["name"]
+                print(f"Opening most recently modified (today): {project_to_open}")
+            elif len(yesterday_projects) >= 1:
+                # Multiple matches from yesterday or older - show interactive selection
+                print(f"Projects matching '{project_name}':")
+                print("-" * 50)
+                for i, p in enumerate(matching_projects_with_time, 1):
+                    mtime = p["mtime"]
+                    age = now - mtime
+                    if mtime >= today:
+                        age_str = "today"
+                    elif mtime >= yesterday:
+                        age_str = "yesterday"
+                    elif age.days < 7:
+                        age_str = f"{age.days} days ago"
+                    elif age.days < 30:
+                        age_str = f"{age.days // 7} weeks ago"
+                    else:
+                        age_str = f"{age.days // 30} months ago"
+                    print(f"  {i}. {p['name']} ({age_str})")
+                
+                print("-" * 50)
+                try:
+                    choice = input(f"Select project (1-{len(matching_projects)}) or press Enter for first: ").strip()
+                    if choice:
+                        idx = int(choice) - 1
+                        if 0 <= idx < len(matching_projects):
+                            project_to_open = matching_projects[idx]
+                        else:
+                            print("Invalid selection, using first match.")
+                            project_to_open = matching_projects[0]
+                    else:
+                        project_to_open = matching_projects[0]
+                except (ValueError, EOFError):
+                    project_to_open = matching_projects[0]
+            else:
+                # No recent matches, use first one
+                project_to_open = matching_projects[0]
         
         parser = argparse.ArgumentParser(
             description="Open project in IDE",
