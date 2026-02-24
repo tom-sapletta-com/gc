@@ -122,8 +122,29 @@ def _extract_git_url_from_text(text: str) -> Optional[str]:
     lines = text.strip().split('\n')
     for line in lines:
         line = line.strip()
+        # Check if the entire line is a git URL
         if parse_git_url(line) is not None:
             return line
+        
+        # Try to extract git URL from within the line using regex
+        # Look for SSH pattern: git@github.com:owner/repo.git
+        ssh_pattern = r'git@[^:]+:([^/]+)/([^/]+)\.git'
+        ssh_match = re.search(ssh_pattern, line)
+        if ssh_match:
+            return ssh_match.group(0)
+        
+        # Look for HTTPS pattern: https://github.com/owner/repo.git
+        https_pattern = r'https://[^/]+/([^/]+)/([^/]+)\.git'
+        https_match = re.search(https_pattern, line)
+        if https_match:
+            return https_match.group(0)
+        
+        # Look for HTTPS pattern without .git: https://github.com/owner/repo
+        https_pattern_no_git = r'https://[^/]+/([^/]+)/([^/]+)(?<!\.git)'
+        https_match_no_git = re.search(https_pattern_no_git, line)
+        if https_match_no_git:
+            return https_match_no_git.group(0)
+    
     return None
 
 
@@ -570,54 +591,55 @@ def main():
             # Try to get clipboard content
             clipboard_content = _read_clipboard_text()
             if clipboard_content:
-                clipboard_content = clipboard_content.strip()
-                # Check if clipboard contains a git URL
-                parsed = parse_git_url(clipboard_content)
-                if parsed:
-                    owner, repo = parsed
-                    project_name = f"{owner}/{repo}"
-                    print(f"Detected git URL in clipboard: {clipboard_content}")
-                    
-                    # Check if project already exists
-                    base_path = os.path.expanduser("~/github")
-                    project_path = Path(base_path) / owner / repo
-                    
-                    if project_path.exists():
-                        print(f"Project already exists at: {project_path}")
-                        # Continue with opening this project
-                    else:
-                        print(f"Project not found locally. Cloning first...")
-                        # Clone the repository
-                        target_dir = create_directory_structure(owner, repo)
-                        success = clone_repository(clipboard_content, target_dir)
-                        if success:
-                            project_path = target_dir
+                # Extract git URL from clipboard (handles multi-line content)
+                git_url = _extract_git_url_from_text(clipboard_content)
+                if git_url:
+                    parsed = parse_git_url(git_url)
+                    if parsed:
+                        owner, repo = parsed
+                        project_name = f"{owner}/{repo}"
+                        print(f"Detected git URL in clipboard: {git_url}")
+                        
+                        # Check if project already exists
+                        base_path = os.path.expanduser("~/github")
+                        project_path = Path(base_path) / owner / repo
+                        
+                        if project_path.exists():
+                            print(f"Project already exists at: {project_path}")
+                            # Continue with opening this project
                         else:
-                            print("Failed to clone repository. Showing available projects:")
-                            for project in all_projects:
-                                print(f"  {project}")
-                            print("\nUsage: glon open <project>")
-                            print("Example: glon open tom-sapletta-com/xeen")
-                            return
-                    
-                    # Parse IDE arguments if any
-                    parser = argparse.ArgumentParser(
-                        description="Open project in IDE",
-                        prog="glon open"
-                    )
-                    parser.add_argument(
-                        "--ide",
-                        default="pycharm",
-                        choices=["pycharm", "idea", "vscode", "code", "webstorm", "goland", "rider"],
-                        help="IDE to use (pycharm, idea, vscode, webstorm, goland, rider)"
-                    )
-                    
-                    # Filter IDE args from open_args
-                    ide_args = [arg for arg in open_args if arg.startswith("--")]
-                    args = parser.parse_args(ide_args)
-                    
-                    open_in_ide(str(project_path), args.ide)
-                    return
+                            print(f"Project not found locally. Cloning first...")
+                            # Clone the repository
+                            target_dir = create_directory_structure(owner, repo)
+                            success = clone_repository(git_url, target_dir)
+                            if success:
+                                project_path = target_dir
+                            else:
+                                print("Failed to clone repository. Showing available projects:")
+                                for project in all_projects:
+                                    print(f"  {project}")
+                                print("\nUsage: glon open <project>")
+                                print("Example: glon open tom-sapletta-com/xeen")
+                                return
+                        
+                        # Parse IDE arguments if any
+                        parser = argparse.ArgumentParser(
+                            description="Open project in IDE",
+                            prog="glon open"
+                        )
+                        parser.add_argument(
+                            "--ide",
+                            default="pycharm",
+                            choices=["pycharm", "idea", "vscode", "code", "webstorm", "goland", "rider"],
+                            help="IDE to use (pycharm, idea, vscode, webstorm, goland, rider)"
+                        )
+                        
+                        # Filter IDE args from open_args
+                        ide_args = [arg for arg in open_args if arg.startswith("--")]
+                        args = parser.parse_args(ide_args)
+                        
+                        open_in_ide(str(project_path), args.ide)
+                        return
             
             # No valid clipboard content, show available projects
             print("Available projects:")
