@@ -10,9 +10,10 @@ The `glon` package provides a convenient CLI tool for cloning git repositories t
 
 - **Easy Cloning**: Clone git repositories with a single command
 - **Clipboard Integration**: Clone directly from clipboard URLs
+- **Smart Opening**: Open projects with clipboard auto-detection and auto-cloning
 - **Grab from Clipboard**: Grab paths from clipboard (git URLs or local paths)
 - **List Projects**: List all cloned projects with time-based filtering
-- **Open in IDE**: Open projects directly in PyCharm or other IDEs
+- **Open in IDE**: Open projects directly in PyCharm, VSCode, and other IDEs
 - **Organized Structure**: Projects organized by owner/repo structure
 
 ## Installation
@@ -39,6 +40,16 @@ glon https://github.com/owner/repo.git
 
 # Or clone from clipboard (copies URL to clipboard first)
 glon
+```
+
+### Smart Open (Clipboard-Prioritized)
+
+```bash
+# Smart open - checks clipboard first, auto-clones if needed
+glon open
+
+# Copy a git URL to clipboard, then:
+glon open                    # Auto-detects and opens the project
 ```
 
 ### Grab from Clipboard
@@ -120,11 +131,28 @@ glon list --base-path ~/my-projects  # Custom base path
 Open a project in your IDE (PyCharm, VSCode, etc.):
 
 ```bash
+# Open with clipboard priority - checks clipboard first for git URLs
+glon open                    # Auto-detect from clipboard, or show project list
+
+# Open specific project
 glon open owner/repo        # Open in PyCharm (default)
 glon open owner/repo --ide vscode    # Open in VS Code
 glon open /full/path/to/project     # Open with full path
 glon open ~/github/owner/repo       # Open with expanded path
+
+# Open with different IDE
+glon open --ide vscode              # Open clipboard-detected project in VS Code
+glon open --ide idea                # Open in IntelliJ IDEA
+glon open --ide webstorm            # Open in WebStorm
+glon open --ide goland              # Open in GoLand
+glon open --ide rider               # Open in Rider
 ```
+
+**Clipboard-Prioritized Opening**: When `glon open` is called without arguments, it:
+1. First checks clipboard for git URLs (SSH or HTTPS format)
+2. If a git URL is found and the project exists locally, opens it immediately
+3. If the project doesn't exist, clones it first then opens it
+4. If no valid git URL is found, shows the available projects list
 
 ## API Reference
 

@@ -1,3 +1,47 @@
+## [0.1.21] - 2026-02-24
+
+### Summary
+
+feat(docs): CLI interface with 2 supporting modules
+
+### Docs
+
+- docs: update README
+
+### Other
+
+- update glon/__init__.py
+
+
+## [0.1.21] - 2026-02-24
+
+### Summary
+
+feat(open): clipboard-prioritized project opening
+
+### Added
+
+- Smart `glon open` command with clipboard auto-detection
+- Auto-cloning functionality when clipboard contains git URL for non-existent projects
+- Enhanced git URL extraction from multi-line clipboard content
+- Support for SSH and HTTPS git URL formats in clipboard
+
+### Features
+
+- `glon open` now checks clipboard first for git URLs before showing project list
+- Automatic project cloning when git URL detected in clipboard but project not locally available
+- Regex-based git URL extraction from clipboard text (handles URLs embedded in sentences)
+
+### Docs
+
+- Updated README.md with new smart opening functionality
+- Added clipboard-prioritized opening examples and documentation
+
+### Other
+
+- update glon/cli.py
+
+
 ## [0.1.20] - 2026-02-24
 
 ### Summary
