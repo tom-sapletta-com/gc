@@ -83,13 +83,13 @@ DATA_TYPES (by cross-function usage) [38 annotated, 0 inferred / 41 functions]:
   bool                 consumed:4   produced:4  
   str, Any             consumed:0   produced:6    output-heavy
   tuple                consumed:1   produced:2    narrow scope
-  Path                 consumed:1   produced:1    narrow scope
   str, int             consumed:0   produced:2    narrow scope
+  Path                 consumed:1   produced:1    narrow scope
+  logging.Logger       consumed:0   produced:1    narrow scope
   float                consumed:1   produced:0    narrow scope
   List[Any]            consumed:0   produced:1    narrow scope
-  datetime             consumed:0   produced:1    narrow scope
   dict                 consumed:0   produced:1    narrow scope
-  logging.Logger       consumed:0   produced:1    narrow scope
+  datetime             consumed:0   produced:1    narrow scope
 
   HUB TYPES (consumed ≥10):
     str → 18 consumers → split into:
@@ -97,8 +97,8 @@ DATA_TYPES (by cross-function usage) [38 annotated, 0 inferred / 41 functions]:
 
 SIDE_EFFECTS:
   IO:        cleanup_temp_files, force_garbage_collection, find_object_cycles, create_directory_structure, clone_repository, grab_from_clipboard, list_projects, open_in_ide, main
-  Mutation:  monitor_memory_usage, GarbageCollector.__init__, GarbageCollector.enable, GarbageCollector.disable, GarbageCollector._record_stats, MemoryProfiler.__init__, MemoryProfiler.take_snapshot, MemoryProfiler.clear_snapshots, MemoryProfiler.clear_tracking, get_all_projects_with_time
-  Pure:      get_object_size, analyze_memory_usage, set_debug_gc, clear_gc_debug, create_memory_logger, GarbageCollector.collect, GarbageCollector.get_stats, GarbageCollector.get_count, GarbageCollector.set_threshold, GarbageCollector.get_objects
+  Mutation:  GarbageCollector.__init__, GarbageCollector.enable, GarbageCollector.disable, GarbageCollector._record_stats, MemoryProfiler.__init__, MemoryProfiler.take_snapshot, MemoryProfiler.clear_snapshots, MemoryProfiler.clear_tracking, monitor_memory_usage, get_all_projects_with_time
+  Pure:      GarbageCollector.collect, GarbageCollector.get_stats, GarbageCollector.get_count, GarbageCollector.set_threshold, GarbageCollector.get_objects, GarbageCollector.get_referrers, GarbageCollector.get_referents, GarbageCollector.get_memory_summary, MemoryProfiler.track_object, MemoryProfiler.get_tracked_objects
 
   PIPELINE PURITY:
     Glon            ██░░ 66% pure

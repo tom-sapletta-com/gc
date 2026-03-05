@@ -1,16 +1,16 @@
 flowchart LR
     subgraph glon_cli
+        glon__cli__get_all_projects_with_time["get_all_projects_with_time"]
         glon__cli__get_all_projects["get_all_projects"]
         glon__cli__list_projects["list_projects"]
-        glon__cli__grab_from_clipboard["grab_from_clipboard"]
-        glon__cli___extract_git_url_from_text["_extract_git_url_from_text"]
-        glon__cli__parse_time_filter["parse_time_filter"]
         glon__cli__create_directory_structure["create_directory_structure"]
         glon__cli__parse_git_url["parse_git_url"]
-        glon__cli__get_all_projects_with_time["get_all_projects_with_time"]
-        glon__cli__clone_repository["clone_repository"]
+        glon__cli___extract_git_url_from_text["_extract_git_url_from_text"]
+        glon__cli__grab_from_clipboard["grab_from_clipboard"]
         glon__cli__main["main"]
+        glon__cli__parse_time_filter["parse_time_filter"]
         glon__cli___clipboard_url_candidate["_clipboard_url_candidate"]
+        glon__cli__clone_repository["clone_repository"]
         glon__cli___read_clipboard_text["_read_clipboard_text"]
     end
     glon__cli__get_all_projects --> glon__cli__get_all_projects_with_time

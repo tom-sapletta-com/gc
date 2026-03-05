@@ -30,11 +30,11 @@ D:
     i: gc,os,tempfile,shutil,time,sys,typing.{Any,Dict,List,Optional}
     e: cleanup_temp_files,monitor_memory_usage,force_garbage_collection,find_object_cycles,get_object_size,analyze_memory_usage,set_debug_gc,clear_gc_debug
     cleanup_temp_files(pattern:str='*')->int
-    monitor_memory_usage(duration:int=60;interval:float=1.0)->List[Dict[str, Any]]
-    force_garbage_collection(verbose:bool=False)->Dict[str, int]
+    monitor_memory_usage(duration:int=60;interval:float=1.0)->List[Dict[str,Any]]
+    force_garbage_collection(verbose:bool=False)->Dict[str,int]
     find_object_cycles(obj:Any;max_depth:int=10)->List[List[Any]]
     get_object_size(obj:Any)->int
-    analyze_memory_usage()->Dict[str, Any]
+    analyze_memory_usage()->Dict[str,Any]
     set_debug_gc(flags:int=gc.DEBUG_STATS)->None
     clear_gc_debug()->None
   tests/test_cli.py:

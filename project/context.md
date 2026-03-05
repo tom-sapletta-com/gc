@@ -95,16 +95,6 @@ Returns:
 > Record current statistics for monitoring.
 - **Calls**: self.stats_history.append, time.time, self.get_count, self.get_stats, len, self.get_objects
 
-### glon.utils.cleanup_temp_files
-> Clean up temporary files matching a pattern.
-
-Args:
-    pattern: File pattern to match (default: "*")
-    
-Returns:
-    Number of files cleaned up
-- **Calls**: tempfile.gettempdir, os.listdir, os.path.join, os.path.isfile, os.remove
-
 ### glon.core.GarbageCollector.get_memory_summary
 > Get a summary of memory usage and garbage collection status.
 - **Calls**: self.get_count, self.get_stats, len, gc.get_threshold, self.get_objects
@@ -131,6 +121,16 @@ Returns:
     Comparison data
 - **Calls**: IndexError, snap1.get, snap2.get, len, len
 
+### glon.utils.cleanup_temp_files
+> Clean up temporary files matching a pattern.
+
+Args:
+    pattern: File pattern to match (default: "*")
+    
+Returns:
+    Number of files cleaned up
+- **Calls**: tempfile.gettempdir, os.listdir, os.path.join, os.path.isfile, os.remove
+
 ### glon.core.MemoryProfiler.get_tracked_objects
 > Get information about tracked objects.
 - **Calls**: self.weak_refs.items, info.get, info.get
@@ -144,27 +144,6 @@ Args:
 Returns:
     Number of objects collecte
 - **Calls**: gc.collect, self._record_stats
-
-### glon.utils.get_object_size
-> Get approximate size of an object in bytes.
-
-Args:
-    obj: Object to measure
-    
-Returns:
-    Approximate size in bytes
-- **Calls**: sys.getsizeof
-
-### glon.utils.set_debug_gc
-> Set garbage collection debug flags.
-
-Args:
-    flags: Debug flags (gc.DEBUG_STATS, gc.DEBUG_LEAK, etc.)
-- **Calls**: gc.set_debug
-
-### glon.utils.clear_gc_debug
-> Clear garbage collection debug flags.
-- **Calls**: gc.set_debug
 
 ### glon.core.GarbageCollector.__init__
 - **Calls**: gc.isenabled
@@ -208,6 +187,27 @@ Args:
 ### glon.core.MemoryProfiler.clear_tracking
 > Clear all tracked objects.
 - **Calls**: self.weak_refs.clear
+
+### glon.utils.get_object_size
+> Get approximate size of an object in bytes.
+
+Args:
+    obj: Object to measure
+    
+Returns:
+    Approximate size in bytes
+- **Calls**: sys.getsizeof
+
+### glon.utils.set_debug_gc
+> Set garbage collection debug flags.
+
+Args:
+    flags: Debug flags (gc.DEBUG_STATS, gc.DEBUG_LEAK, etc.)
+- **Calls**: gc.set_debug
+
+### glon.utils.clear_gc_debug
+> Clear garbage collection debug flags.
+- **Calls**: gc.set_debug
 
 ### glon.core.MemoryProfiler.__init__
 
@@ -255,14 +255,14 @@ create_memory_logger [glon.utils]
 _record_stats [glon.core.GarbageCollector]
 ```
 
-### Flow 9: cleanup_temp_files
-```
-cleanup_temp_files [glon.utils]
-```
-
-### Flow 10: get_memory_summary
+### Flow 9: get_memory_summary
 ```
 get_memory_summary [glon.core.GarbageCollector]
+```
+
+### Flow 10: track_object
+```
+track_object [glon.core.MemoryProfiler]
 ```
 
 ## Key Classes
@@ -315,17 +315,14 @@ Functions exposed as public API (no underscore prefix):
 - `glon.cli.parse_time_filter` - 9 calls
 - `glon.utils.force_garbage_collection` - 7 calls
 - `glon.utils.create_memory_logger` - 7 calls
-- `glon.utils.cleanup_temp_files` - 5 calls
 - `glon.core.GarbageCollector.get_memory_summary` - 5 calls
 - `glon.core.MemoryProfiler.track_object` - 5 calls
 - `glon.core.MemoryProfiler.compare_snapshots` - 5 calls
+- `glon.utils.cleanup_temp_files` - 5 calls
 - `glon.core.MemoryProfiler.get_tracked_objects` - 3 calls
 - `glon.cli.create_directory_structure` - 3 calls
 - `glon.core.GarbageCollector.collect` - 2 calls
 - `glon.cli.get_all_projects` - 2 calls
-- `glon.utils.get_object_size` - 1 calls
-- `glon.utils.set_debug_gc` - 1 calls
-- `glon.utils.clear_gc_debug` - 1 calls
 - `glon.core.GarbageCollector.enable` - 1 calls
 - `glon.core.GarbageCollector.disable` - 1 calls
 - `glon.core.GarbageCollector.get_stats` - 1 calls
@@ -336,6 +333,9 @@ Functions exposed as public API (no underscore prefix):
 - `glon.core.GarbageCollector.get_referents` - 1 calls
 - `glon.core.MemoryProfiler.clear_snapshots` - 1 calls
 - `glon.core.MemoryProfiler.clear_tracking` - 1 calls
+- `glon.utils.get_object_size` - 1 calls
+- `glon.utils.set_debug_gc` - 1 calls
+- `glon.utils.clear_gc_debug` - 1 calls
 
 ## System Interactions
 
