@@ -1,0 +1,454 @@
+project: /home/tom/github/tom-sapletta-com/glon
+generated_from: code2llm call graph analysis
+stats:
+  total_nodes: 33
+  total_edges: 50
+  modules_count: 1
+nodes:
+  glon.cli.get_all_projects_with_time:
+    name: get_all_projects_with_time
+    module: glon.cli
+    line: 80
+    cyclomatic_complexity: 7
+    calls_out: 10
+    calls_in: 4
+  glon.cli.main:
+    name: main
+    module: glon.cli
+    line: 838
+    cyclomatic_complexity: 13
+    calls_out: 5
+    calls_in: 0
+  glon.cli.get_all_projects:
+    name: get_all_projects
+    module: glon.cli
+    line: 75
+    cyclomatic_complexity: 2
+    calls_out: 2
+    calls_in: 1
+  glon.cli.open_in_ide:
+    name: open_in_ide
+    module: glon.cli
+    line: 490
+    cyclomatic_complexity: 7
+    calls_out: 12
+    calls_in: 4
+  glon.cli.parse_git_url:
+    name: parse_git_url
+    module: glon.cli
+    line: 179
+    cyclomatic_complexity: 3
+    calls_out: 3
+    calls_in: 5
+  glon.cli._grab_local_path:
+    name: _grab_local_path
+    module: glon.cli
+    line: 290
+    cyclomatic_complexity: 8
+    calls_out: 16
+    calls_in: 1
+  glon.cli._handle_list:
+    name: _handle_list
+    module: glon.cli
+    line: 725
+    cyclomatic_complexity: 3
+    calls_out: 9
+    calls_in: 1
+  glon.cli.list_projects:
+    name: list_projects
+    module: glon.cli
+    line: 349
+    cyclomatic_complexity: 8
+    calls_out: 10
+    calls_in: 1
+  glon.cli._handle_clone:
+    name: _handle_clone
+    module: glon.cli
+    line: 801
+    cyclomatic_complexity: 9
+    calls_out: 16
+    calls_in: 1
+  glon.cli._handle_grab:
+    name: _handle_grab
+    module: glon.cli
+    line: 760
+    cyclomatic_complexity: 1
+    calls_out: 6
+    calls_in: 1
+  glon.cli.grab_from_clipboard:
+    name: grab_from_clipboard
+    module: glon.cli
+    line: 224
+    cyclomatic_complexity: 5
+    calls_out: 8
+    calls_in: 1
+  glon.cli.clone_repository:
+    name: clone_repository
+    module: glon.cli
+    line: 198
+    cyclomatic_complexity: 4
+    calls_out: 9
+    calls_in: 3
+  glon.cli._clipboard_url_candidate:
+    name: _clipboard_url_candidate
+    module: glon.cli
+    line: 159
+    cyclomatic_complexity: 7
+    calls_out: 5
+    calls_in: 1
+  glon.cli._resolve_project_path:
+    name: _resolve_project_path
+    module: glon.cli
+    line: 437
+    cyclomatic_complexity: 6
+    calls_out: 13
+    calls_in: 1
+  glon.cli._format_project_age:
+    name: _format_project_age
+    module: glon.cli
+    line: 526
+    cyclomatic_complexity: 5
+    calls_out: 2
+    calls_in: 1
+  glon.cli._select_matching_project:
+    name: _select_matching_project
+    module: glon.cli
+    line: 641
+    cyclomatic_complexity: 10
+    calls_out: 15
+    calls_in: 1
+  glon.cli._choose_ide:
+    name: _choose_ide
+    module: glon.cli
+    line: 459
+    cyclomatic_complexity: 6
+    calls_out: 15
+    calls_in: 1
+  glon.cli._clone_clipboard_project:
+    name: _clone_clipboard_project
+    module: glon.cli
+    line: 577
+    cyclomatic_complexity: 5
+    calls_out: 12
+    calls_in: 1
+  glon.cli._prompt_for_project:
+    name: _prompt_for_project
+    module: glon.cli
+    line: 548
+    cyclomatic_complexity: 9
+    calls_out: 6
+    calls_in: 2
+  glon.cli._extract_git_url_from_text:
+    name: _extract_git_url_from_text
+    module: glon.cli
+    line: 144
+    cyclomatic_complexity: 5
+    calls_out: 6
+    calls_in: 1
+  glon.cli._grab_git_url:
+    name: _grab_git_url
+    module: glon.cli
+    line: 252
+    cyclomatic_complexity: 5
+    calls_out: 6
+    calls_in: 1
+  glon.cli.create_directory_structure:
+    name: create_directory_structure
+    module: glon.cli
+    line: 188
+    cyclomatic_complexity: 1
+    calls_out: 2
+    calls_in: 3
+  glon.cli.parse_time_filter:
+    name: parse_time_filter
+    module: glon.cli
+    line: 326
+    cyclomatic_complexity: 8
+    calls_out: 9
+    calls_in: 1
+  glon.cli._open_recent_project:
+    name: _open_recent_project
+    module: glon.cli
+    line: 619
+    cyclomatic_complexity: 3
+    calls_out: 12
+    calls_in: 1
+  glon.cli._print_projects:
+    name: _print_projects
+    module: glon.cli
+    line: 418
+    cyclomatic_complexity: 4
+    calls_out: 6
+    calls_in: 1
+  glon.cli._print_project:
+    name: _print_project
+    module: glon.cli
+    line: 399
+    cyclomatic_complexity: 4
+    calls_out: 8
+    calls_in: 1
+  glon.cli._read_clipboard_text:
+    name: _read_clipboard_text
+    module: glon.cli
+    line: 114
+    cyclomatic_complexity: 7
+    calls_out: 7
+    calls_in: 3
+  glon.cli._open_from_clipboard:
+    name: _open_from_clipboard
+    module: glon.cli
+    line: 604
+    cyclomatic_complexity: 4
+    calls_out: 6
+    calls_in: 1
+  glon.cli._parse_ide_option:
+    name: _parse_ide_option
+    module: glon.cli
+    line: 519
+    cyclomatic_complexity: 1
+    calls_out: 5
+    calls_in: 3
+  glon.cli._handle_open:
+    name: _handle_open
+    module: glon.cli
+    line: 697
+    cyclomatic_complexity: 10
+    calls_out: 21
+    calls_in: 1
+  glon.cli._print_project_choices:
+    name: _print_project_choices
+    module: glon.cli
+    line: 541
+    cyclomatic_complexity: 2
+    calls_out: 4
+    calls_in: 2
+  glon.cli._resolve_filter_date:
+    name: _resolve_filter_date
+    module: glon.cli
+    line: 384
+    cyclomatic_complexity: 5
+    calls_out: 5
+    calls_in: 1
+  glon.cli._expand_base_path:
+    name: _expand_base_path
+    module: glon.cli
+    line: 71
+    cyclomatic_complexity: 2
+    calls_out: 2
+    calls_in: 6
+edges:
+- caller: glon.cli.get_all_projects
+  callee: glon.cli.get_all_projects_with_time
+  call_type: resolved
+- caller: glon.cli.get_all_projects_with_time
+  callee: glon.cli._expand_base_path
+  call_type: resolved
+- caller: glon.cli._extract_git_url_from_text
+  callee: glon.cli.parse_git_url
+  call_type: resolved
+- caller: glon.cli._clipboard_url_candidate
+  callee: glon.cli._read_clipboard_text
+  call_type: resolved
+- caller: glon.cli._clipboard_url_candidate
+  callee: glon.cli.parse_git_url
+  call_type: resolved
+- caller: glon.cli.create_directory_structure
+  callee: glon.cli._expand_base_path
+  call_type: resolved
+- caller: glon.cli.grab_from_clipboard
+  callee: glon.cli._read_clipboard_text
+  call_type: resolved
+- caller: glon.cli.grab_from_clipboard
+  callee: glon.cli.parse_git_url
+  call_type: resolved
+- caller: glon.cli.grab_from_clipboard
+  callee: glon.cli._grab_local_path
+  call_type: resolved
+- caller: glon.cli.grab_from_clipboard
+  callee: glon.cli._grab_git_url
+  call_type: resolved
+- caller: glon.cli._grab_git_url
+  callee: glon.cli.create_directory_structure
+  call_type: resolved
+- caller: glon.cli._grab_git_url
+  callee: glon.cli.clone_repository
+  call_type: resolved
+- caller: glon.cli._grab_local_path
+  callee: glon.cli._expand_base_path
+  call_type: resolved
+- caller: glon.cli.list_projects
+  callee: glon.cli._expand_base_path
+  call_type: resolved
+- caller: glon.cli.list_projects
+  callee: glon.cli._resolve_filter_date
+  call_type: resolved
+- caller: glon.cli.list_projects
+  callee: glon.cli._print_projects
+  call_type: resolved
+- caller: glon.cli.list_projects
+  callee: glon.cli.get_all_projects_with_time
+  call_type: resolved
+- caller: glon.cli._resolve_filter_date
+  callee: glon.cli.parse_time_filter
+  call_type: resolved
+- caller: glon.cli._print_projects
+  callee: glon.cli._print_project
+  call_type: resolved
+- caller: glon.cli.open_in_ide
+  callee: glon.cli._resolve_project_path
+  call_type: resolved
+- caller: glon.cli.open_in_ide
+  callee: glon.cli._choose_ide
+  call_type: resolved
+- caller: glon.cli._print_project_choices
+  callee: glon.cli._format_project_age
+  call_type: resolved
+- caller: glon.cli._clone_clipboard_project
+  callee: glon.cli.parse_git_url
+  call_type: resolved
+- caller: glon.cli._clone_clipboard_project
+  callee: glon.cli.create_directory_structure
+  call_type: resolved
+- caller: glon.cli._clone_clipboard_project
+  callee: glon.cli.clone_repository
+  call_type: resolved
+- caller: glon.cli._open_from_clipboard
+  callee: glon.cli._read_clipboard_text
+  call_type: resolved
+- caller: glon.cli._open_from_clipboard
+  callee: glon.cli._extract_git_url_from_text
+  call_type: resolved
+- caller: glon.cli._open_from_clipboard
+  callee: glon.cli._clone_clipboard_project
+  call_type: resolved
+- caller: glon.cli._open_from_clipboard
+  callee: glon.cli.open_in_ide
+  call_type: resolved
+- caller: glon.cli._open_from_clipboard
+  callee: glon.cli._parse_ide_option
+  call_type: resolved
+- caller: glon.cli._open_recent_project
+  callee: glon.cli._print_project_choices
+  call_type: resolved
+- caller: glon.cli._open_recent_project
+  callee: glon.cli._prompt_for_project
+  call_type: resolved
+- caller: glon.cli._open_recent_project
+  callee: glon.cli.open_in_ide
+  call_type: resolved
+- caller: glon.cli._open_recent_project
+  callee: glon.cli.get_all_projects_with_time
+  call_type: resolved
+- caller: glon.cli._open_recent_project
+  callee: glon.cli._parse_ide_option
+  call_type: resolved
+- caller: glon.cli._select_matching_project
+  callee: glon.cli._print_project_choices
+  call_type: resolved
+- caller: glon.cli._handle_open
+  callee: glon.cli.get_all_projects
+  call_type: resolved
+- caller: glon.cli._handle_open
+  callee: glon.cli.get_all_projects_with_time
+  call_type: resolved
+- caller: glon.cli._handle_open
+  callee: glon.cli._select_matching_project
+  call_type: resolved
+- caller: glon.cli._handle_open
+  callee: glon.cli.open_in_ide
+  call_type: resolved
+- caller: glon.cli._handle_list
+  callee: glon.cli.list_projects
+  call_type: resolved
+- caller: glon.cli._handle_grab
+  callee: glon.cli.grab_from_clipboard
+  call_type: resolved
+- caller: glon.cli._handle_clone
+  callee: glon.cli.parse_git_url
+  call_type: resolved
+- caller: glon.cli._handle_clone
+  callee: glon.cli.create_directory_structure
+  call_type: resolved
+- caller: glon.cli._handle_clone
+  callee: glon.cli.clone_repository
+  call_type: resolved
+- caller: glon.cli._handle_clone
+  callee: glon.cli._clipboard_url_candidate
+  call_type: resolved
+- caller: glon.cli.main
+  callee: glon.cli._handle_clone
+  call_type: resolved
+- caller: glon.cli.main
+  callee: glon.cli._handle_open
+  call_type: resolved
+- caller: glon.cli.main
+  callee: glon.cli._handle_list
+  call_type: resolved
+- caller: glon.cli.main
+  callee: glon.cli._handle_grab
+  call_type: resolved
+modules:
+  glon.cli:
+  - glon.cli._choose_ide
+  - glon.cli._clipboard_url_candidate
+  - glon.cli._clone_clipboard_project
+  - glon.cli._expand_base_path
+  - glon.cli._extract_git_url_from_text
+  - glon.cli._format_project_age
+  - glon.cli._grab_git_url
+  - glon.cli._grab_local_path
+  - glon.cli._handle_clone
+  - glon.cli._handle_grab
+  - glon.cli._handle_list
+  - glon.cli._handle_open
+  - glon.cli._open_from_clipboard
+  - glon.cli._open_recent_project
+  - glon.cli._parse_ide_option
+  - glon.cli._print_project
+  - glon.cli._print_project_choices
+  - glon.cli._print_projects
+  - glon.cli._prompt_for_project
+  - glon.cli._read_clipboard_text
+  - glon.cli._resolve_filter_date
+  - glon.cli._resolve_project_path
+  - glon.cli._select_matching_project
+  - glon.cli.clone_repository
+  - glon.cli.create_directory_structure
+  - glon.cli.get_all_projects
+  - glon.cli.get_all_projects_with_time
+  - glon.cli.grab_from_clipboard
+  - glon.cli.list_projects
+  - glon.cli.main
+  - glon.cli.open_in_ide
+  - glon.cli.parse_git_url
+  - glon.cli.parse_time_filter
+entry_points:
+- glon.cli.main
+- glon.core.GarbageCollector.__init__
+- glon.core.GarbageCollector._record_stats
+- glon.core.GarbageCollector.collect
+- glon.core.GarbageCollector.disable
+- glon.core.GarbageCollector.enable
+- glon.core.GarbageCollector.get_count
+- glon.core.GarbageCollector.get_memory_summary
+- glon.core.GarbageCollector.get_objects
+- glon.core.GarbageCollector.get_referents
+- glon.core.GarbageCollector.get_referrers
+- glon.core.GarbageCollector.get_stats
+- glon.core.GarbageCollector.set_threshold
+- glon.core.MemoryProfiler.__init__
+- glon.core.MemoryProfiler.clear_snapshots
+- glon.core.MemoryProfiler.clear_tracking
+- glon.core.MemoryProfiler.compare_snapshots
+- glon.core.MemoryProfiler.get_tracked_objects
+- glon.core.MemoryProfiler.take_snapshot
+- glon.core.MemoryProfiler.track_object
+- glon.utils.analyze_memory_usage
+- glon.utils.cleanup_temp_files
+- glon.utils.clear_gc_debug
+- glon.utils.create_memory_logger
+- glon.utils.find_object_cycles
+- glon.utils.force_garbage_collection
+- glon.utils.get_object_size
+- glon.utils.monitor_memory_usage
+- glon.utils.set_debug_gc

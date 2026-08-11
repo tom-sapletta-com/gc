@@ -2,103 +2,136 @@
 CLI interface for glon package - Git Clone utility.
 """
 
-import os
-import sys
-import subprocess
 import argparse
-from pathlib import Path
-from typing import Optional, List
+import os
 import re
+import shutil
+import subprocess
+import sys
 from datetime import datetime, timedelta
+from pathlib import Path
+from typing import List, Optional, Sequence, Tuple, TypedDict, cast
+
+try:
+    import tkinter
+except ImportError:  # pragma: no cover - depends on the Python distribution
+    tkinter = None  # type: ignore[assignment]
 
 # Try to import argcomplete for tab completion
 try:
     import argcomplete
-    from argcomplete.completers import ChoicesCompleter
+    from argcomplete.completers import ChoicesCompleter as ChoicesCompleter
+
     ARGCOMPLETE_AVAILABLE = True
 except ImportError:
     ARGCOMPLETE_AVAILABLE = False
 
 
+DEFAULT_BASE_PATH = "~/github"
+MAX_CLIPBOARD_URL_LENGTH = 200
+PROJECT_LIST_WIDTH = 80
+SELECTION_LIST_WIDTH = 50
+IDE_LIST_WIDTH = 40
+RECENT_PROJECT_LIMIT = 10
+DAYS_PER_MONTH = 30
+DAYS_PER_QUARTER = 90
+DAYS_PER_HALF_YEAR = 180
+DAYS_PER_YEAR = 365
+
+SSH_URL_RE = re.compile(r"git@[^:]+:([^/]+)/([^/]+)\.git$")
+HTTPS_URL_RE = re.compile(r"https://[^/]+/([^/]+)/([^/]+)\.git$")
+HTTPS_URL_WITHOUT_SUFFIX_RE = re.compile(r"https://[^/]+/([^/]+)/([^/]+)$")
+EMBEDDED_URL_RES = (
+    re.compile(r"git@[^:\s]+:[^/\s]+/[^\s]+\.git"),
+    re.compile(r"https://[^/\s]+/[^/\s]+/[^\s]+\.git"),
+    re.compile(r"https://[^/\s]+/[^/\s]+/[^\s]+"),
+)
+
+IDE_COMMANDS = {
+    "pycharm": "pycharm",
+    "idea": "idea",
+    "vscode": "code",
+    "code": "code",
+    "webstorm": "webstorm",
+    "goland": "goland",
+    "rider": "rider",
+}
+
+
+class ProjectInfo(TypedDict):
+    """Filesystem metadata used by project listing and selection."""
+
+    name: str
+    path: Path
+    mtime: datetime
+    owner: str
+    repo: str
+
+
+def _expand_base_path(base_path: Optional[str]) -> Path:
+    return Path(os.path.expanduser(base_path or DEFAULT_BASE_PATH))
+
+
 def get_all_projects(base_path: Optional[str] = None) -> List[str]:
-    """
-    Get all available projects in the base path.
-    
-    Args:
-        base_path: Base path to search (default: ~/github)
-        
-    Returns:
-        List of project paths in "owner/repo" format
-    """
-    projects_with_time = get_all_projects_with_time(base_path)
-    return sorted([p["name"] for p in projects_with_time])
+    """Return available projects as sorted ``owner/repo`` names."""
+    return sorted(project["name"] for project in get_all_projects_with_time(base_path))
 
 
-def get_all_projects_with_time(base_path: Optional[str] = None) -> List[dict]:
-    """
-    Get all available projects with modification time.
-    
-    Args:
-        base_path: Base path to search (default: ~/github)
-        
-    Returns:
-        List of dicts with project info including modification time
-    """
-    if base_path is None:
-        base_path = os.path.expanduser("~/github")
-    
-    base_path_obj = Path(base_path)
-    projects = []
-    
+def get_all_projects_with_time(base_path: Optional[str] = None) -> List[ProjectInfo]:
+    """Return project directories and their modification times."""
+    base_path_obj = _expand_base_path(base_path)
+    projects: List[ProjectInfo] = []
+
     if not base_path_obj.exists():
         return projects
-    
+
     for owner_dir in base_path_obj.iterdir():
         if not owner_dir.is_dir():
             continue
-        
+
         for repo_dir in owner_dir.iterdir():
             if not repo_dir.is_dir():
                 continue
-            
+
             try:
                 mtime = datetime.fromtimestamp(repo_dir.stat().st_mtime)
             except OSError:
                 mtime = datetime.min
-            
-            projects.append({
-                "name": f"{owner_dir.name}/{repo_dir.name}",
-                "path": repo_dir,
-                "mtime": mtime,
-                "owner": owner_dir.name,
-                "repo": repo_dir.name
-            })
-    
+
+            projects.append(
+                {
+                    "name": f"{owner_dir.name}/{repo_dir.name}",
+                    "path": repo_dir,
+                    "mtime": mtime,
+                    "owner": owner_dir.name,
+                    "repo": repo_dir.name,
+                }
+            )
+
     return sorted(projects, key=lambda x: x["mtime"], reverse=True)
 
 
 def _read_clipboard_text() -> Optional[str]:
-    try:
-        import tkinter
-
-        root = tkinter.Tk()
-        root.withdraw()
+    if tkinter is not None:
         try:
-            text = root.clipboard_get()
-        finally:
-            root.destroy()
-        return text
-    except Exception:
-        pass
+            root = tkinter.Tk()
+            root.withdraw()
+            try:
+                text = root.clipboard_get()
+            finally:
+                root.destroy()
+            return str(text)
+        except Exception:
+            pass
 
-    for cmd in (
+    for command in (
         ["wl-paste", "-n"],
         ["xclip", "-o", "-selection", "clipboard"],
         ["xsel", "--clipboard", "--output"],
     ):
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        except Exception:
+            result = subprocess.run(command, capture_output=True, text=True, check=True)
+        except (OSError, subprocess.CalledProcessError):
             continue
 
         text = (result.stdout or "").strip()
@@ -109,46 +142,23 @@ def _read_clipboard_text() -> Optional[str]:
 
 
 def _extract_git_url_from_text(text: str) -> Optional[str]:
-    """
-    Extract git URL from text that may contain multiple lines.
-    
-    Args:
-        text: Text that may contain a git URL
-        
-    Returns:
-        Git URL string or None if not found
-    """
-    # Split into lines and check each line
-    lines = text.strip().split('\n')
-    for line in lines:
+    """Extract the first supported Git URL from arbitrary text."""
+    for line in text.strip().splitlines():
         line = line.strip()
-        # Check if the entire line is a git URL
         if parse_git_url(line) is not None:
             return line
-        
-        # Try to extract git URL from within the line using regex
-        # Look for SSH pattern: git@github.com:owner/repo.git
-        ssh_pattern = r'git@[^:]+:([^/]+)/([^/]+)\.git'
-        ssh_match = re.search(ssh_pattern, line)
-        if ssh_match:
-            return ssh_match.group(0)
-        
-        # Look for HTTPS pattern: https://github.com/owner/repo.git
-        https_pattern = r'https://[^/]+/([^/]+)/([^/]+)\.git'
-        https_match = re.search(https_pattern, line)
-        if https_match:
-            return https_match.group(0)
-        
-        # Look for HTTPS pattern without .git: https://github.com/owner/repo
-        https_pattern_no_git = r'https://[^/]+/([^/]+)/([^/]+)(?<!\.git)'
-        https_match_no_git = re.search(https_pattern_no_git, line)
-        if https_match_no_git:
-            return https_match_no_git.group(0)
-    
+
+        for pattern in EMBEDDED_URL_RES:
+            match = pattern.search(line)
+            if match:
+                return match.group(0)
+
     return None
 
 
-def _clipboard_url_candidate(max_len: int = 200) -> Optional[str]:
+def _clipboard_url_candidate(
+    max_len: int = MAX_CLIPBOARD_URL_LENGTH,
+) -> Optional[str]:
     text = _read_clipboard_text()
     if text is None:
         return None
@@ -166,86 +176,42 @@ def _clipboard_url_candidate(max_len: int = 200) -> Optional[str]:
     return text
 
 
-def parse_git_url(url: str) -> Optional[tuple]:
-    """
-    Parse git URL and extract owner and repository name.
-    
-    Args:
-        url: Git URL (SSH or HTTPS)
-        
-    Returns:
-        Tuple of (owner, repo) or None if invalid
-    """
-    # SSH format: git@github.com:owner/repo.git
-    ssh_pattern = r'git@[^:]+:([^/]+)/([^/]+)\.git$'
-    ssh_match = re.match(ssh_pattern, url)
-    if ssh_match:
-        return ssh_match.group(1), ssh_match.group(2)
-    
-    # HTTPS format: https://github.com/owner/repo.git
-    https_pattern = r'https://[^/]+/([^/]+)/([^/]+)\.git$'
-    https_match = re.match(https_pattern, url)
-    if https_match:
-        return https_match.group(1), https_match.group(2)
-    
-    # HTTPS format without .git: https://github.com/owner/repo
-    https_pattern_no_git = r'https://[^/]+/([^/]+)/([^/]+)$'
-    https_match_no_git = re.match(https_pattern_no_git, url)
-    if https_match_no_git:
-        return https_match_no_git.group(1), https_match_no_git.group(2)
-    
+def parse_git_url(url: str) -> Optional[Tuple[str, str]]:
+    """Parse a supported SSH or HTTPS URL into owner and repository names."""
+    for pattern in (SSH_URL_RE, HTTPS_URL_RE, HTTPS_URL_WITHOUT_SUFFIX_RE):
+        match = pattern.fullmatch(url)
+        if match:
+            return match.group(1), match.group(2)
     return None
 
 
-def create_directory_structure(owner: str, repo: str, base_path: Optional[str] = None) -> Path:
-    """
-    Create directory structure for the repository.
-    
-    Args:
-        owner: Repository owner
-        repo: Repository name
-        base_path: Base path (defaults to ~/github)
-        
-    Returns:
-        Path to created directory
-    """
-    if base_path is None:
-        base_path = os.path.expanduser("~/github")
-    
-    target_dir = Path(base_path) / owner / repo
+def create_directory_structure(
+    owner: str, repo: str, base_path: Optional[str] = None
+) -> Path:
+    """Create and return the configured ``owner/repo`` directory."""
+    target_dir = _expand_base_path(base_path) / owner / repo
     target_dir.mkdir(parents=True, exist_ok=True)
-    
+
     return target_dir
 
 
 def clone_repository(url: str, target_dir: Path) -> bool:
-    """
-    Clone git repository to target directory.
-    
-    Args:
-        url: Git URL to clone
-        target_dir: Target directory for cloning
-        
-    Returns:
-        True if successful, False otherwise
-    """
+    """Clone ``url`` into an empty target directory."""
     try:
-        # Check if directory is empty
         if any(target_dir.iterdir()):
             print(f"Directory {target_dir} is not empty. Skipping clone.")
             return False
-        
-        # Clone the repository
-        result = subprocess.run(
+
+        subprocess.run(
             ["git", "clone", url, str(target_dir)],
             capture_output=True,
             text=True,
-            check=True
+            check=True,
         )
-        
+
         print(f"Successfully cloned {url} to {target_dir}")
         return True
-        
+
     except subprocess.CalledProcessError as e:
         print(f"Failed to clone repository: {e}")
         print(f"Error output: {e.stderr}")
@@ -255,800 +221,639 @@ def clone_repository(url: str, target_dir: Path) -> bool:
         return False
 
 
-def grab_from_clipboard(base_path: Optional[str] = None, dry_run: bool = False, verbose: bool = False) -> bool:
-    """
-    Grab path from clipboard and process it.
-    
-    Reads from clipboard and determines if it's:
-    - A git URL → clone it
-    - A local path → copy/symlink to organized structure
-    
-    Args:
-        base_path: Base path for cloning (default: ~/github)
-        dry_run: Show what would be done without actually doing it
-        verbose: Verbose output
-        
-    Returns:
-        True if successful, False otherwise
-    """
+def grab_from_clipboard(
+    base_path: Optional[str] = None,
+    dry_run: bool = False,
+    verbose: bool = False,
+) -> bool:
+    """Clone a clipboard URL or link/copy a clipboard filesystem path."""
     # Try to read from clipboard
     clipboard_text = _read_clipboard_text()
-    
+
     if clipboard_text is None:
         print("Error: Clipboard is empty or could not be read.")
         return False
-    
+
     clipboard_text = clipboard_text.strip()
-    
+
     if not clipboard_text:
         print("Error: Clipboard is empty.")
         return False
-    
+
     if verbose:
         print(f"Clipboard content: {clipboard_text}")
-    
-    # Check if it's a git URL
+
     parsed = parse_git_url(clipboard_text)
-    if parsed:
-        owner, repo = parsed
-        if verbose:
-            print(f"Detected git URL - Owner: {owner}, Repository: {repo}")
-        
-        target_dir = create_directory_structure(owner, repo, base_path)
-        
-        if verbose:
-            print(f"Target directory: {target_dir}")
-        
-        if dry_run:
-            print(f"Would clone {clipboard_text} to {target_dir}")
-            return True
-        
-        success = clone_repository(clipboard_text, target_dir)
-        
-        if success:
-            print(f"Repository ready at: {target_dir}")
-            return True
+    if parsed is not None:
+        return _grab_git_url(clipboard_text, parsed, base_path, dry_run, verbose)
+    return _grab_local_path(clipboard_text, base_path, dry_run, verbose)
+
+
+def _grab_git_url(
+    url: str,
+    parsed: Tuple[str, str],
+    base_path: Optional[str],
+    dry_run: bool,
+    verbose: bool,
+) -> bool:
+    owner, repo = parsed
+    if verbose:
+        print(f"Detected git URL - Owner: {owner}, Repository: {repo}")
+
+    target_dir = create_directory_structure(owner, repo, base_path)
+    if verbose:
+        print(f"Target directory: {target_dir}")
+    if dry_run:
+        print(f"Would clone {url} to {target_dir}")
+        return True
+    if not clone_repository(url, target_dir):
         return False
-    
-    # It's a local path - check if it exists
+
+    print(f"Repository ready at: {target_dir}")
+    return True
+
+
+def _copy_or_link(source_path: Path, target_dir: Path) -> None:
+    if source_path.is_dir():
+        link_path = target_dir / source_path.name
+        if link_path.exists() or link_path.is_symlink():
+            print(f"Symlink already exists at {link_path}")
+            return
+        link_path.symlink_to(source_path.resolve())
+        print(f"Created symlink: {link_path} -> {source_path}")
+        return
+
+    shutil.copy2(source_path, target_dir / source_path.name)
+    print(f"Copied {source_path} to {target_dir}")
+
+
+def _grab_local_path(
+    clipboard_text: str,
+    base_path: Optional[str],
+    dry_run: bool,
+    verbose: bool,
+) -> bool:
     source_path = Path(clipboard_text)
-    
     if not source_path.exists():
         print(f"Error: Path does not exist: {clipboard_text}")
         print("Note: Path must be a valid git URL or existing local directory.")
         return False
-    
-    if source_path.is_dir():
-        # It's a directory - get the name
-        dir_name = source_path.name
-    else:
-        # It's a file - get the name without extension
-        dir_name = source_path.stem
-    
+
+    dir_name = source_path.name if source_path.is_dir() else source_path.stem
     if verbose:
         print(f"Detected local path - Name: {dir_name}")
-    
-    # Create target directory in base_path
-    if base_path is None:
-        base_path = os.path.expanduser("~/github")
-    
-    target_dir = Path(base_path) / dir_name
+
+    target_dir = _expand_base_path(base_path) / dir_name
     target_dir.mkdir(parents=True, exist_ok=True)
-    
     if verbose:
         print(f"Target directory: {target_dir}")
-    
     if dry_run:
         print(f"Would copy/symlink {clipboard_text} to {target_dir}")
         return True
-    
-    # Check if target is empty
     if any(target_dir.iterdir()):
         print(f"Warning: Directory {target_dir} is not empty. Skipping.")
         return False
-    
+
     try:
-        # Create symlink instead of copying
-        if source_path.is_dir():
-            # For directories, create a symlink to the source
-            link_path = target_dir / source_path.name
-            if link_path.exists() or link_path.is_symlink():
-                print(f"Symlink already exists at {link_path}")
-            else:
-                link_path.symlink_to(source_path.resolve())
-                print(f"Created symlink: {link_path} -> {source_path}")
-        else:
-            # For files, copy them
-            import shutil
-            shutil.copy2(source_path, target_dir / source_path.name)
-            print(f"Copied {source_path} to {target_dir}")
-        
+        _copy_or_link(source_path, target_dir)
         print(f"Path ready at: {target_dir}")
         return True
-        
-    except Exception as e:
-        print(f"Error processing path: {e}")
+    except OSError as error:
+        print(f"Error processing path: {error}")
         return False
 
 
 def parse_time_filter(filter_str: str) -> Optional[datetime]:
-    """
-    Parse time filter string like 'last month', 'last week', 'today'.
-    
-    Args:
-        filter_str: Time filter string
-        
-    Returns:
-        datetime object or None if invalid
-    """
+    """Convert a supported relative-time label to a cutoff timestamp."""
     filter_str = filter_str.lower().strip()
     now = datetime.now()
-    
+
     if filter_str in ("today", "last day", "1 day"):
         return now - timedelta(days=1)
-    elif filter_str in ("last week", "1 week", "week"):
+    if filter_str in ("last week", "1 week", "week"):
         return now - timedelta(weeks=1)
-    elif filter_str in ("last month", "1 month", "month"):
-        return now - timedelta(days=30)
-    elif filter_str in ("last 3 months", "3 months"):
-        return now - timedelta(days=90)
-    elif filter_str in ("last 6 months", "6 months"):
-        return now - timedelta(days=180)
-    elif filter_str in ("last year", "1 year", "year"):
-        return now - timedelta(days=365)
-    elif filter_str in ("all", "everything", "*"):
+    if filter_str in ("last month", "1 month", "month"):
+        return now - timedelta(days=DAYS_PER_MONTH)
+    if filter_str in ("last 3 months", "3 months"):
+        return now - timedelta(days=DAYS_PER_QUARTER)
+    if filter_str in ("last 6 months", "6 months"):
+        return now - timedelta(days=DAYS_PER_HALF_YEAR)
+    if filter_str in ("last year", "1 year", "year"):
+        return now - timedelta(days=DAYS_PER_YEAR)
+    if filter_str in ("all", "everything", "*"):
         return None
-    
+
     return None
 
 
-def list_projects(base_path: Optional[str] = None, time_filter: Optional[str] = None, verbose: bool = False, limit: Optional[int] = None) -> bool:
-    """
-    List all projects in the base path.
-    
-    Args:
-        base_path: Base path to search (default: ~/github)
-        time_filter: Filter by time (e.g., 'last month', 'last week', 'today')
-        verbose: Verbose output
-        limit: Limit number of results
-        
-    Returns:
-        True if successful, False otherwise
-    """
-    if base_path is None:
-        base_path = os.path.expanduser("~/github")
-    
-    base_path_obj = Path(base_path)
-    
+def list_projects(
+    base_path: Optional[str] = None,
+    time_filter: Optional[str] = None,
+    verbose: bool = False,
+    limit: Optional[int] = None,
+) -> bool:
+    """Print projects, optionally filtered by age and result count."""
+    base_path_obj = _expand_base_path(base_path)
+
     if not base_path_obj.exists():
-        print(f"Error: Base path does not exist: {base_path}")
+        print(f"Error: Base path does not exist: {base_path_obj}")
         return False
-    
-    # Parse time filter
-    filter_date = None
-    if time_filter:
-        filter_date = parse_time_filter(time_filter)
-        if time_filter and filter_date is None and time_filter not in ("all", "everything", "*"):
-            # Check if it's a number (e.g., "30" for 30 days)
-            try:
-                days = int(time_filter)
-                filter_date = now = datetime.now() - timedelta(days=days)
-            except ValueError:
-                print(f"Warning: Unknown time filter '{time_filter}', showing all projects")
-    
-    # Collect all projects
-    projects = []
-    
-    for owner_dir in base_path_obj.iterdir():
-        if not owner_dir.is_dir():
-            continue
-        
-        for repo_dir in owner_dir.iterdir():
-            if not repo_dir.is_dir():
-                continue
-            
-            # Get modification time
-            mtime = datetime.fromtimestamp(repo_dir.stat().st_mtime)
-            
-            # Apply time filter
-            if filter_date and mtime < filter_date:
-                continue
-            
-            projects.append({
-                "path": repo_dir,
-                "owner": owner_dir.name,
-                "repo": repo_dir.name,
-                "mtime": mtime
-            })
-    
+
+    filter_date = _resolve_filter_date(time_filter)
+
+    projects = [
+        project
+        for project in get_all_projects_with_time(str(base_path_obj))
+        if filter_date is None or project["mtime"] >= filter_date
+    ]
+
     if not projects:
-        print(f"No projects found in {base_path}")
+        print(f"No projects found in {base_path_obj}")
         if time_filter:
             print(f"  (No projects modified {time_filter})")
         return True
-    
-    # Sort by modification time (newest first)
-    projects.sort(key=lambda x: x["mtime"], reverse=True)
-    
-    # Apply limit
+
     total_count = len(projects)
     if limit:
         projects = projects[:limit]
-    
-    # Print header
+
+    _print_projects(projects, total_count, base_path_obj, time_filter, verbose, limit)
+    return True
+
+
+def _resolve_filter_date(time_filter: Optional[str]) -> Optional[datetime]:
+    if not time_filter:
+        return None
+
+    filter_date = parse_time_filter(time_filter)
+    if filter_date is not None or time_filter in ("all", "everything", "*"):
+        return filter_date
+
+    try:
+        return datetime.now() - timedelta(days=int(time_filter))
+    except ValueError:
+        print(f"Warning: Unknown time filter '{time_filter}', showing all projects")
+        return None
+
+
+def _print_project(project: ProjectInfo, verbose: bool) -> None:
+    path = project["path"]
+    owner = project["owner"]
+    repo = project["repo"]
+    date_str = project["mtime"].strftime("%Y-%m-%d %H:%M")
+    is_git = (path / ".git").exists()
+
+    if verbose:
+        print(f"{owner}/{repo}")
+        print(f"  Path: {path}")
+        print(f"  Modified: {date_str}")
+        print(f"  Git: {'Yes' if is_git else 'No'}")
+        print()
+        return
+
+    git_marker = "✓" if is_git else "✗"
+    print(f"{date_str} {git_marker} {owner}/{repo}")
+
+
+def _print_projects(
+    projects: Sequence[ProjectInfo],
+    total_count: int,
+    base_path: Path,
+    time_filter: Optional[str],
+    verbose: bool,
+    limit: Optional[int],
+) -> None:
     print(f"\nFound {total_count} project(s) in {base_path}")
     if time_filter:
         print(f"Filtered by: {time_filter}")
     if limit:
         print(f"Showing {len(projects)} result(s)")
-    print("-" * 80)
-    
-    # Print projects
+    print("-" * PROJECT_LIST_WIDTH)
+
     for project in projects:
-        path = project["path"]
-        owner = project["owner"]
-        repo = project["repo"]
-        mtime = project["mtime"]
-        
-        # Format date
-        date_str = mtime.strftime("%Y-%m-%d %H:%M")
-        
-        # Check if it's a git repository
-        is_git = (path / ".git").exists()
-        
-        if verbose:
-            print(f"{owner}/{repo}")
-            print(f"  Path: {path}")
-            print(f"  Modified: {date_str}")
-            print(f"  Git: {'Yes' if is_git else 'No'}")
-            print()
-        else:
-            git_marker = "✓" if is_git else "✗"
-            print(f"{date_str} {git_marker} {owner}/{repo}")
-    
-    return True
+        _print_project(project, verbose)
 
 
-def open_in_ide(project_path: str, ide: Optional[str] = None) -> bool:
-    """
-    Open a project in an IDE.
-    
-    Args:
-        project_path: Path to project (e.g., "owner/repo" or full path)
-        ide: IDE to use (if None, will prompt user to select)
-        
-    Returns:
-        True if successful, False otherwise
-    """
-    # Check if it's in "owner/repo" format
+def _resolve_project_path(project_path: str) -> Optional[Path]:
     if "/" in project_path and not os.path.isabs(project_path):
-        # It's in owner/repo format, convert to full path
         parts = project_path.split("/")
         if len(parts) == 2:
             owner, repo = parts
-            base_path = os.path.expanduser("~/github")
-            full_path = Path(base_path) / owner / repo
+            full_path = _expand_base_path(None) / owner / repo
         else:
             print(f"Error: Invalid project path format: {project_path}")
-            return False
+            return None
     else:
-        # It's a full path
         full_path = Path(project_path)
-    
-    # Expand user path
-    full_path = Path(os.path.expanduser(full_path))
-    
-    # Check if path exists
+
+    full_path = Path(os.path.expanduser(str(full_path)))
     if not full_path.exists():
         print(f"Error: Project path does not exist: {full_path}")
-        return False
-    
+        return None
     if not full_path.is_dir():
         print(f"Error: Project path is not a directory: {full_path}")
-        return False
-    
-    # Define available IDEs with their commands
-    ide_commands = {
-        "pycharm": ["pycharm", str(full_path)],
-        "idea": ["idea", str(full_path)],
-        "vscode": ["code", str(full_path)],
-        "code": ["code", str(full_path)],
-        "webstorm": ["webstorm", str(full_path)],
-        "goland": ["goland", str(full_path)],
-        "rider": ["rider", str(full_path)],
-    }
-    
-    # If IDE not specified, prompt user to select
-    if ide is None:
-        print(f"\nSelect IDE to open {full_path}:")
-        print("-" * 40)
-        available_ides = list(ide_commands.keys())
-        for i, ide_name in enumerate(available_ides, 1):
-            print(f"  {i}. {ide_name}")
-        print("-" * 40)
-        
-        try:
-            choice = input(f"Select IDE (1-{len(available_ides)}): ").strip()
-            if not choice:
-                print("No IDE selected. Canceling.")
-                return False
-            
-            idx = int(choice) - 1
-            if 0 <= idx < len(available_ides):
-                ide = available_ides[idx]
-            else:
-                print(f"Invalid selection: {choice}")
-                return False
-        except ValueError:
-            print(f"Invalid input: {choice}")
-            return False
-        except EOFError:
-            print("No input received. Canceling.")
-            return False
-    
-    cmd = ide_commands.get(ide.lower())
-    if cmd is None:
-        print(f"Error: Unknown IDE: {ide}")
-        print(f"Supported IDEs: {', '.join(ide_commands.keys())}")
-        return False
-    
+        return None
+    return full_path
+
+
+def _choose_ide(full_path: Path) -> Optional[str]:
+    print(f"\nSelect IDE to open {full_path}:")
+    print("-" * IDE_LIST_WIDTH)
+    available_ides = list(IDE_COMMANDS)
+    for index, ide_name in enumerate(available_ides, 1):
+        print(f"  {index}. {ide_name}")
+    print("-" * IDE_LIST_WIDTH)
+
     try:
-        subprocess.Popen(cmd)
-        print(f"Opened {full_path} in {ide}")
+        choice = input(f"Select IDE (1-{len(available_ides)}): ").strip()
+    except EOFError:
+        print("No input received. Canceling.")
+        return None
+
+    if not choice:
+        print("No IDE selected. Canceling.")
+        return None
+
+    try:
+        index = int(choice) - 1
+    except ValueError:
+        print(f"Invalid input: {choice}")
+        return None
+
+    if 0 <= index < len(available_ides):
+        return available_ides[index]
+
+    print(f"Invalid selection: {choice}")
+    return None
+
+
+def open_in_ide(project_path: str, ide: Optional[str] = None) -> bool:
+    """Open a project directory in a supported IDE."""
+    full_path = _resolve_project_path(project_path)
+    if full_path is None:
+        return False
+
+    selected_ide = ide or _choose_ide(full_path)
+    if selected_ide is None:
+        return False
+
+    executable = IDE_COMMANDS.get(selected_ide.lower())
+    if executable is None:
+        print(f"Error: Unknown IDE: {selected_ide}")
+        print(f"Supported IDEs: {', '.join(IDE_COMMANDS)}")
+        return False
+
+    command = [executable, str(full_path)]
+    try:
+        subprocess.Popen(command)
+        print(f"Opened {full_path} in {selected_ide}")
         return True
     except FileNotFoundError:
-        print(f"Error: {ide} is not installed or not in PATH")
+        print(f"Error: {selected_ide} is not installed or not in PATH")
         return False
-    except Exception as e:
-        print(f"Error opening project: {e}")
+    except OSError as error:
+        print(f"Error opening project: {error}")
         return False
 
 
-def main():
-    """Main CLI entry point."""
-    # Check if open command is being used
-    if "open" in sys.argv:
-        # Filter out 'open' from sys.argv
-        open_args = [arg for arg in sys.argv[1:] if arg != "open"]
-        
-        # Get all available projects
-        all_projects = get_all_projects()
-        
-        # If no project specified, check clipboard first
-        if not open_args or open_args[0].startswith("-"):
-            # Try to get clipboard content
-            clipboard_content = _read_clipboard_text()
-            if clipboard_content:
-                # Extract git URL from clipboard (handles multi-line content)
-                git_url = _extract_git_url_from_text(clipboard_content)
-                if git_url:
-                    parsed = parse_git_url(git_url)
-                    if parsed:
-                        owner, repo = parsed
-                        project_name = f"{owner}/{repo}"
-                        print(f"Detected git URL in clipboard: {git_url}")
-                        
-                        # Check if project already exists
-                        base_path = os.path.expanduser("~/github")
-                        project_path = Path(base_path) / owner / repo
-                        
-                        if project_path.exists():
-                            print(f"Project already exists at: {project_path}")
-                            # Continue with opening this project
-                        else:
-                            print(f"Project not found locally. Cloning first...")
-                            # Clone the repository
-                            target_dir = create_directory_structure(owner, repo)
-                            success = clone_repository(git_url, target_dir)
-                            if success:
-                                project_path = target_dir
-                            else:
-                                print("Failed to clone repository. Showing available projects:")
-                                for project in all_projects:
-                                    print(f"  {project}")
-                                print("\nUsage: glon open <project>")
-                                print("Example: glon open tom-sapletta-com/xeen")
-                                return
-                        
-                        # Parse IDE arguments if any
-                        parser = argparse.ArgumentParser(
-                            description="Open project in IDE",
-                            prog="glon open"
-                        )
-                        parser.add_argument(
-                            "--ide",
-                            default=None,
-                            choices=["pycharm", "idea", "vscode", "code", "webstorm", "goland", "rider"],
-                            help="IDE to use (pycharm, idea, vscode, webstorm, goland, rider)"
-                        )
-                        
-                        # Filter IDE args from open_args
-                        ide_args = [arg for arg in open_args if arg.startswith("--")]
-                        args = parser.parse_args(ide_args)
-                        
-                        open_in_ide(str(project_path), args.ide)
-                        return
-            
-            # No valid clipboard content, show numbered list of recent projects
-            all_projects_with_time = get_all_projects_with_time()
-            if not all_projects_with_time:
-                print("No projects found.")
-                return
-            
-            # Show last 10 projects sorted by modification time
-            recent_projects = all_projects_with_time[:10]
-            print(f"\nRecent projects (last {len(recent_projects)}):")
-            print("-" * 50)
-            now = datetime.now()
-            today = now.replace(hour=0, minute=0, second=0, microsecond=0)
-            yesterday = today - timedelta(days=1)
-            
-            for i, p in enumerate(recent_projects, 1):
-                mtime = p["mtime"]
-                age = now - mtime
-                if mtime >= today:
-                    age_str = "today"
-                elif mtime >= yesterday:
-                    age_str = "yesterday"
-                elif age.days < 7:
-                    age_str = f"{age.days} days ago"
-                elif age.days < 30:
-                    age_str = f"{age.days // 7} weeks ago"
-                else:
-                    age_str = f"{age.days // 30} months ago"
-                print(f"  {i}. {p['name']} ({age_str})")
-            
-            print("-" * 50)
-            
-            try:
-                choice = input(f"Select project (1-{len(recent_projects)}) or press Enter to cancel: ").strip()
-                if not choice:
-                    print("Canceled.")
-                    return
-                
-                idx = int(choice) - 1
-                if 0 <= idx < len(recent_projects):
-                    project_to_open = recent_projects[idx]["name"]
-                    
-                    # Parse IDE arguments if any
-                    parser = argparse.ArgumentParser(
-                        description="Open project in IDE",
-                        prog="glon open"
-                    )
-                    parser.add_argument(
-                        "--ide",
-                        default=None,
-                        choices=["pycharm", "idea", "vscode", "code", "webstorm", "goland", "rider"],
-                        help="IDE to use (pycharm, idea, vscode, webstorm, goland, rider)"
-                    )
-                    
-                    # Filter IDE args from open_args
-                    ide_args = [arg for arg in open_args if arg.startswith("--")]
-                    args = parser.parse_args(ide_args)
-                    
-                    open_in_ide(project_to_open, args.ide)
-                else:
-                    print(f"Invalid selection: {choice}")
-            except ValueError:
-                print(f"Invalid input: {choice}")
-            except EOFError:
-                print("No input received.")
-            return
-        
-        # Get the project name (first non-flag argument)
-        project_name = open_args[0]
-        
-        # Check if it's a full path (absolute path provided directly)
-        if os.path.isabs(project_name) or Path(project_name).exists():
-            # It's a full path, use it directly
-            full_path = Path(project_name).resolve()
-            if full_path.exists() and full_path.is_dir():
-                # Parse IDE arguments
-                parser = argparse.ArgumentParser(
-                    description="Open project in IDE",
-                    prog="glon open"
-                )
-                parser.add_argument(
-                    "--ide",
-                    default=None,
-                    choices=["pycharm", "idea", "vscode", "code", "webstorm", "goland", "rider"],
-                    help="IDE to use"
-                )
-                # Parse IDE arguments - include --ide and its value
-                ide_args = []
-                skip_next = False
-                for i, arg in enumerate(open_args):
-                    if skip_next:
-                        skip_next = False
-                        continue
-                    if arg.startswith("--"):
-                        ide_args.append(arg)
-                        # Check if next arg is a value (not a flag)
-                        if i + 1 < len(open_args) and not open_args[i + 1].startswith("-"):
-                            ide_args.append(open_args[i + 1])
-                            skip_next = True
-                args = parser.parse_args(ide_args)
-                open_in_ide(str(full_path), args.ide)
-                return
-        
-        # Get all projects with their modification times
-        all_projects_with_time = get_all_projects_with_time()
-        
-        # Filter projects that match the input (case-insensitive partial match)
-        matching_projects_with_time = [
-            p for p in all_projects_with_time 
-            if project_name.lower() in p["name"].lower()
-        ]
-        
-        if not matching_projects_with_time:
-            print(f"No projects found matching: {project_name}")
-            print("\nAvailable projects:")
-            for project in all_projects:
-                print(f"  {project}")
-            return
-        
-        # Get project names from matches
-        matching_projects = [p["name"] for p in matching_projects_with_time]
-        
-        # If there's exactly one match, use it
-        if len(matching_projects) == 1:
-            project_to_open = matching_projects[0]
-        else:
-            # Multiple matches - use smart selection
-            now = datetime.now()
-            today = now.replace(hour=0, minute=0, second=0, microsecond=0)
-            yesterday = today - timedelta(days=1)
-            
-            # Check if any matching project was modified today
-            today_projects = [p for p in matching_projects_with_time if p["mtime"] >= today]
-            yesterday_projects = [p for p in matching_projects_with_time if p["mtime"] >= yesterday]
-            
-            if today_projects:
-                # Use the most recently modified project from today
-                most_recent = max(today_projects, key=lambda x: x["mtime"])
-                project_to_open = most_recent["name"]
-                print(f"Opening most recently modified (today): {project_to_open}")
-            elif len(yesterday_projects) >= 1:
-                # Multiple matches from yesterday or older - show interactive selection
-                print(f"Projects matching '{project_name}':")
-                print("-" * 50)
-                for i, p in enumerate(matching_projects_with_time, 1):
-                    mtime = p["mtime"]
-                    age = now - mtime
-                    if mtime >= today:
-                        age_str = "today"
-                    elif mtime >= yesterday:
-                        age_str = "yesterday"
-                    elif age.days < 7:
-                        age_str = f"{age.days} days ago"
-                    elif age.days < 30:
-                        age_str = f"{age.days // 7} weeks ago"
-                    else:
-                        age_str = f"{age.days // 30} months ago"
-                    print(f"  {i}. {p['name']} ({age_str})")
-                
-                print("-" * 50)
-                try:
-                    choice = input(f"Select project (1-{len(matching_projects)}) or press Enter for first: ").strip()
-                    if choice:
-                        idx = int(choice) - 1
-                        if 0 <= idx < len(matching_projects):
-                            project_to_open = matching_projects[idx]
-                        else:
-                            print("Invalid selection, using first match.")
-                            project_to_open = matching_projects[0]
-                    else:
-                        project_to_open = matching_projects[0]
-                except (ValueError, EOFError):
-                    project_to_open = matching_projects[0]
-            else:
-                # No recent matches, use first one
-                project_to_open = matching_projects[0]
-        
-        parser = argparse.ArgumentParser(
-            description="Open project in IDE",
-            prog="glon open"
-        )
-        
-        # Add project argument with choices for autocomplete
-        project_arg = parser.add_argument(
-            "project",
-            help="Project path (owner/repo or full path)"
-        )
-        
-        # If argcomplete is available and we have projects, set up autocomplete
-        if ARGCOMPLETE_AVAILABLE and all_projects:
-            project_arg.completer = ChoicesCompleter(all_projects)
-        
-        parser.add_argument(
-            "--ide",
-            default=None,
-            choices=["pycharm", "idea", "vscode", "code", "webstorm", "goland", "rider"],
-            help="IDE to use (pycharm, idea, vscode, webstorm, goland, rider)"
-        )
-        
-        # If argcomplete is available, activate it
-        if ARGCOMPLETE_AVAILABLE:
-            argcomplete.autocomplete(parser)
-        
-        args = parser.parse_args(open_args)
-        
-        open_in_ide(project_to_open, args.ide)
+def _parse_ide_option(arguments: Sequence[str]) -> Optional[str]:
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--ide", choices=list(IDE_COMMANDS))
+    options, _ = parser.parse_known_args(arguments)
+    return cast(Optional[str], options.ide)
+
+
+def _format_project_age(mtime: datetime, now: datetime) -> str:
+    today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    yesterday = today - timedelta(days=1)
+    age = now - mtime
+    if mtime >= today:
+        return "today"
+    if mtime >= yesterday:
+        return "yesterday"
+    if age.days < 7:
+        return f"{age.days} days ago"
+    if age.days < DAYS_PER_MONTH:
+        return f"{age.days // 7} weeks ago"
+    return f"{age.days // DAYS_PER_MONTH} months ago"
+
+
+def _print_project_choices(projects: Sequence[ProjectInfo]) -> None:
+    now = datetime.now()
+    for index, project in enumerate(projects, 1):
+        age = _format_project_age(project["mtime"], now)
+        print(f"  {index}. {project['name']} ({age})")
+
+
+def _prompt_for_project(
+    projects: Sequence[ProjectInfo],
+    prompt: str,
+    default_to_first: bool,
+) -> Optional[str]:
+    try:
+        choice = input(prompt).strip()
+    except (EOFError, ValueError):
+        return projects[0]["name"] if default_to_first else None
+
+    if not choice:
+        return projects[0]["name"] if default_to_first else None
+
+    try:
+        index = int(choice) - 1
+    except ValueError:
+        return projects[0]["name"] if default_to_first else None
+
+    if 0 <= index < len(projects):
+        return projects[index]["name"]
+
+    if default_to_first:
+        print("Invalid selection, using first match.")
+        return projects[0]["name"]
+
+    print(f"Invalid selection: {choice}")
+    return None
+
+
+def _clone_clipboard_project(
+    git_url: str, all_projects: Sequence[str]
+) -> Optional[Path]:
+    parsed = parse_git_url(git_url)
+    if parsed is None:
+        return None
+
+    owner, repo = parsed
+    print(f"Detected git URL in clipboard: {git_url}")
+    project_path = _expand_base_path(None) / owner / repo
+    if project_path.exists():
+        print(f"Project already exists at: {project_path}")
+        return project_path
+
+    print("Project not found locally. Cloning first...")
+    target_dir = create_directory_structure(owner, repo)
+    if clone_repository(git_url, target_dir):
+        return target_dir
+
+    print("Failed to clone repository. Showing available projects:")
+    for project in all_projects:
+        print(f"  {project}")
+    print("\nUsage: glon open <project>")
+    print("Example: glon open tom-sapletta-com/xeen")
+    return None
+
+
+def _open_from_clipboard(arguments: Sequence[str], all_projects: Sequence[str]) -> bool:
+    clipboard_content = _read_clipboard_text()
+    if not clipboard_content:
+        return False
+
+    git_url = _extract_git_url_from_text(clipboard_content)
+    if git_url is None:
+        return False
+
+    project_path = _clone_clipboard_project(git_url, all_projects)
+    if project_path is not None:
+        open_in_ide(str(project_path), _parse_ide_option(arguments))
+    return True
+
+
+def _open_recent_project(arguments: Sequence[str]) -> None:
+    recent_projects = get_all_projects_with_time()[:RECENT_PROJECT_LIMIT]
+    if not recent_projects:
+        print("No projects found.")
         return
-    
-    # Check if list command is being used (could be "list", "ls", or "glon list", "glon ls")
-    if "list" in sys.argv or "ls" in sys.argv:
-        # Filter out 'list' or 'ls' from sys.argv for the list parser
-        list_args = [arg for arg in sys.argv[1:] if arg not in ("list", "ls")]
-        
-        # Simple parser for list command
-        parser = argparse.ArgumentParser(
-            description="List all cloned projects",
-            prog="glon list"
-        )
-        parser.add_argument(
-            "--base-path",
-            help="Base path to search (default: ~/github)",
-            default=None
-        )
-        parser.add_argument(
-            "--last",
-            dest="last",
-            choices=["today", "week", "month", "3months", "6months", "year"],
-            help="Filter by time: today, week, month, 3months, 6months, year"
-        )
-        parser.add_argument(
-            "filter",
-            nargs="*",
-            default=None,
-            help="Time filter (e.g., 'last month', 'last week', 'today', '30' for days)"
-        )
-        parser.add_argument(
-            "--verbose",
-            "-v",
-            action="store_true",
-            help="Verbose output with full paths"
-        )
-        parser.add_argument(
-            "--limit",
-            type=int,
-            default=None,
-            help="Limit number of results"
-        )
-        args = parser.parse_args(list_args)
-        
-        # Use --last if provided, otherwise use positional filter
-        time_filter = None
-        if args.last:
-            time_filter = f"last {args.last}"
-        elif args.filter:
-            # Join filter words back together (e.g., "last week" -> "last week")
-            time_filter = " ".join(args.filter)
-        
-        list_projects(
-            base_path=args.base_path,
-            time_filter=time_filter,
-            verbose=args.verbose,
-            limit=args.limit
-        )
+
+    print(f"\nRecent projects (last {len(recent_projects)}):")
+    print("-" * SELECTION_LIST_WIDTH)
+    _print_project_choices(recent_projects)
+    print("-" * SELECTION_LIST_WIDTH)
+
+    project = _prompt_for_project(
+        recent_projects,
+        f"Select project (1-{len(recent_projects)}) or press Enter to cancel: ",
+        default_to_first=False,
+    )
+    if project is None:
+        print("Canceled.")
         return
-    
-    # Check if grab command is being used (could be "grab" or "glon grab")
-    if "grab" in sys.argv:
-        # Filter out 'grab' from sys.argv for the grab parser
-        grab_args = [arg for arg in sys.argv[1:] if arg != "grab"]
-        
-        # Simple parser for grab command
-        parser = argparse.ArgumentParser(
-            description="Grab path from clipboard and process it",
-            prog="glon grab"
+    open_in_ide(project, _parse_ide_option(arguments))
+
+
+def _select_matching_project(
+    project_name: str, projects: Sequence[ProjectInfo]
+) -> Optional[str]:
+    matches = [
+        project
+        for project in projects
+        if project_name.lower() in project["name"].lower()
+    ]
+    if not matches:
+        return None
+    if len(matches) == 1:
+        return matches[0]["name"]
+
+    now = datetime.now()
+    today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    yesterday = today - timedelta(days=1)
+    today_projects = [project for project in matches if project["mtime"] >= today]
+    if today_projects:
+        most_recent = max(today_projects, key=lambda project: project["mtime"])
+        selected = most_recent["name"]
+        print(f"Opening most recently modified (today): {selected}")
+        return selected
+
+    if any(project["mtime"] >= yesterday for project in matches):
+        print(f"Projects matching '{project_name}':")
+        print("-" * SELECTION_LIST_WIDTH)
+        _print_project_choices(matches)
+        print("-" * SELECTION_LIST_WIDTH)
+        return _prompt_for_project(
+            matches,
+            f"Select project (1-{len(matches)}) or press Enter for first: ",
+            default_to_first=True,
         )
-        parser.add_argument(
-            "--base-path",
-            help="Base path for output (default: ~/github)",
-            default=None
-        )
-        parser.add_argument(
-            "--dry-run",
-            action="store_true",
-            help="Show what would be done without actually doing it"
-        )
-        parser.add_argument(
-            "--verbose",
-            action="store_true",
-            help="Verbose output"
-        )
-        args = parser.parse_args(grab_args)
-        
-        success = grab_from_clipboard(
-            base_path=args.base_path,
-            dry_run=args.dry_run,
-            verbose=args.verbose
-        )
-        return
-    
-    # Check if clone subcommand is being used
-    use_clone_subcommand = len(sys.argv) > 1 and sys.argv[1] == "clone"
-    
-    # Create main parser with URL as positional argument for backward compatibility
+
+    return matches[0]["name"]
+
+
+def _build_open_parser(projects: Sequence[str]) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Git Clone utility - Clone repositories to organized directory structure",
-        prog="glon"
+        description="Open project in IDE", prog="glon open"
     )
-    
+    project_argument = parser.add_argument(
+        "project", help="Project path (owner/repo or full path)"
+    )
+    if ARGCOMPLETE_AVAILABLE and projects:
+        setattr(project_argument, "completer", ChoicesCompleter(projects))
     parser.add_argument(
-        "url",
-        nargs="?",
-        default=None,
-        help="Git repository URL (SSH or HTTPS). If omitted, will try to use clipboard."
+        "--ide",
+        choices=list(IDE_COMMANDS),
+        help="IDE to use (pycharm, idea, vscode, webstorm, goland, rider)",
     )
-    
+    if ARGCOMPLETE_AVAILABLE:
+        argcomplete.autocomplete(parser)
+    return parser
+
+
+def _handle_open(arguments: Sequence[str]) -> None:
+    all_projects = get_all_projects()
+    if not arguments or arguments[0].startswith("-"):
+        if not _open_from_clipboard(arguments, all_projects):
+            _open_recent_project(arguments)
+        return
+
+    project_name = arguments[0]
+    candidate_path = Path(project_name)
+    if os.path.isabs(project_name) or candidate_path.exists():
+        full_path = candidate_path.resolve()
+        if full_path.exists() and full_path.is_dir():
+            open_in_ide(str(full_path), _parse_ide_option(arguments))
+            return
+
+    projects_with_time = get_all_projects_with_time()
+    project_to_open = _select_matching_project(project_name, projects_with_time)
+    if project_to_open is None:
+        print(f"No projects found matching: {project_name}")
+        print("\nAvailable projects:")
+        for project in all_projects:
+            print(f"  {project}")
+        return
+
+    options = _build_open_parser(all_projects).parse_args(arguments)
+    open_in_ide(project_to_open, options.ide)
+
+
+def _handle_list(arguments: Sequence[str]) -> None:
+    parser = argparse.ArgumentParser(
+        description="List all cloned projects", prog="glon list"
+    )
+    parser.add_argument("--base-path", help="Base path to search (default: ~/github)")
     parser.add_argument(
-        "--base-path",
-        help="Base path for cloning (default: ~/github)",
-        default=None
+        "--last",
+        choices=["today", "week", "month", "3months", "6months", "year"],
+        help="Filter by time: today, week, month, 3months, 6months, year",
     )
-    
+    parser.add_argument(
+        "filter",
+        nargs="*",
+        help="Time filter (e.g., 'last month', 'last week', 'today', '30' for days)",
+    )
+    parser.add_argument(
+        "--verbose", "-v", action="store_true", help="Verbose output with full paths"
+    )
+    parser.add_argument("--limit", type=int, help="Limit number of results")
+    options = parser.parse_args(arguments)
+
+    time_filter = None
+    if options.last:
+        time_filter = f"last {options.last}"
+    elif options.filter:
+        time_filter = " ".join(options.filter)
+
+    list_projects(
+        base_path=options.base_path,
+        time_filter=time_filter,
+        verbose=options.verbose,
+        limit=options.limit,
+    )
+
+
+def _handle_grab(arguments: Sequence[str]) -> None:
+    parser = argparse.ArgumentParser(
+        description="Grab path from clipboard and process it", prog="glon grab"
+    )
+    parser.add_argument("--base-path", help="Base path for output (default: ~/github)")
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Show what would be done without actually cloning"
+        help="Show what would be done without actually doing it",
     )
-    
+    parser.add_argument("--verbose", action="store_true", help="Verbose output")
+    options = parser.parse_args(arguments)
+    grab_from_clipboard(
+        base_path=options.base_path,
+        dry_run=options.dry_run,
+        verbose=options.verbose,
+    )
+
+
+def _build_clone_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Git Clone utility - Clone repositories to organized directory structure"
+        ),
+        prog="glon",
+    )
     parser.add_argument(
-        "--verbose",
-        action="store_true",
-        help="Verbose output"
+        "url",
+        nargs="?",
+        help="Git repository URL (SSH or HTTPS). If omitted, use the clipboard.",
     )
-    
-    args = parser.parse_args()
-    
-    # If clone subcommand was used, remove it from args handling
-    if use_clone_subcommand:
-        # The URL would be in sys.argv[2] if provided
-        if args.url is None and len(sys.argv) > 2:
-            args.url = sys.argv[2]
-    
-    if args.url is None:
-        args.url = _clipboard_url_candidate()
-        if args.url is None:
-            print("Error: Missing git URL. Provide URL argument or copy a valid git URL to clipboard.")
-            return
-    
-    # Parse the URL
-    if args.verbose:
-        print(f"Parsing URL: {args.url}")
-    
-    parsed = parse_git_url(args.url)
-    if not parsed:
-        print(f"Error: Invalid git URL format: {args.url}")
+    parser.add_argument("--base-path", help="Base path for cloning (default: ~/github)")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show what would be done without actually cloning",
+    )
+    parser.add_argument("--verbose", action="store_true", help="Verbose output")
+    return parser
+
+
+def _handle_clone(arguments: Sequence[str]) -> None:
+    options = _build_clone_parser().parse_args(arguments)
+    url = options.url or _clipboard_url_candidate()
+    if url is None:
+        print(
+            "Error: Missing git URL. Provide URL argument or copy a valid "
+            "git URL to clipboard."
+        )
+        return
+
+    if options.verbose:
+        print(f"Parsing URL: {url}")
+
+    parsed = parse_git_url(url)
+    if parsed is None:
+        print(f"Error: Invalid git URL format: {url}")
         print("Supported formats:")
         print("  SSH: git@github.com:owner/repo.git")
         print("  HTTPS: https://github.com/owner/repo.git")
         return
-    
+
     owner, repo = parsed
-    
-    if args.verbose:
+    if options.verbose:
         print(f"Owner: {owner}, Repository: {repo}")
-    
-    # Create directory structure
-    target_dir = create_directory_structure(owner, repo, args.base_path)
-    
-    if args.verbose:
+
+    target_dir = create_directory_structure(owner, repo, options.base_path)
+    if options.verbose:
         print(f"Target directory: {target_dir}")
-    
-    if args.dry_run:
-        print(f"Would clone {args.url} to {target_dir}")
+
+    if options.dry_run:
+        print(f"Would clone {url} to {target_dir}")
         return
-    
-    # Clone the repository
-    success = clone_repository(args.url, target_dir)
-    
-    if not success:
+
+    if clone_repository(url, target_dir):
+        print(f"Repository ready at: {target_dir}")
+
+
+def main(argv: Optional[Sequence[str]] = None) -> None:
+    """Dispatch the requested CLI command."""
+    arguments = list(sys.argv[1:] if argv is None else argv)
+
+    if "open" in arguments:
+        _handle_open([argument for argument in arguments if argument != "open"])
         return
-    
-    print(f"Repository ready at: {target_dir}")
+    if "list" in arguments or "ls" in arguments:
+        _handle_list(
+            [argument for argument in arguments if argument not in ("list", "ls")]
+        )
+        return
+    if "grab" in arguments:
+        _handle_grab([argument for argument in arguments if argument != "grab"])
+        return
+    if arguments[:1] == ["clone"]:
+        arguments = arguments[1:]
+
+    _handle_clone(arguments)
 
 
 if __name__ == "__main__":

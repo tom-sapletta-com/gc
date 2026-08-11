@@ -17,7 +17,7 @@ package-lock.json
 __pycache__/
 *.py[codz]
 *$py.class
-
+.code2llm_cache
 # C extensions
 *.so
 

@@ -2,334 +2,386 @@
 Tests for CLI functionality.
 """
 
-import pytest
 import subprocess
 import tempfile
-import os
-from unittest.mock import patch, MagicMock
 from pathlib import Path
-from glon.cli import parse_git_url, create_directory_structure, clone_repository
+from unittest.mock import MagicMock, patch
+
+from glon.cli import (
+    _extract_git_url_from_text,
+    clone_repository,
+    create_directory_structure,
+    parse_git_url,
+)
 
 
 class TestParseGitUrl:
     """Test cases for URL parsing function."""
-    
-    def test_parse_ssh_url(self):
+
+    def test_parse_ssh_url(self) -> None:
         """Test parsing SSH git URL."""
         url = "git@github.com:tom-sapletta-com/glon.git"
         result = parse_git_url(url)
-        
+
         assert result == ("tom-sapletta-com", "glon")
-    
-    def test_parse_https_url_with_git(self):
+
+    def test_parse_https_url_with_git(self) -> None:
         """Test parsing HTTPS git URL with .git extension."""
         url = "https://github.com/tom-sapletta-com/glon.git"
         result = parse_git_url(url)
-        
+
         assert result == ("tom-sapletta-com", "glon")
-    
-    def test_parse_https_url_without_git(self):
+
+    def test_parse_https_url_without_git(self) -> None:
         """Test parsing HTTPS git URL without .git extension."""
         url = "https://github.com/tom-sapletta-com/glon"
         result = parse_git_url(url)
-        
+
         assert result == ("tom-sapletta-com", "glon")
-    
-    def test_parse_invalid_url(self):
+
+    def test_parse_invalid_url(self) -> None:
         """Test parsing invalid URL."""
         url = "invalid-url"
         result = parse_git_url(url)
-        
+
         assert result is None
-    
-    def test_parse_different_domain_ssh(self):
+
+    def test_parse_different_domain_ssh(self) -> None:
         """Test parsing SSH URL with different domain."""
         url = "git@gitlab.com:user/project.git"
         result = parse_git_url(url)
-        
+
         assert result == ("user", "project")
-    
-    def test_parse_different_domain_https(self):
+
+    def test_parse_different_domain_https(self) -> None:
         """Test parsing HTTPS URL with different domain."""
         url = "https://gitlab.com/user/project.git"
         result = parse_git_url(url)
-        
+
         assert result == ("user", "project")
+
+    def test_extract_embedded_url(self) -> None:
+        """Extract a URL surrounded by prose."""
+        text = "Clone https://github.com/owner/repo.git before continuing."
+
+        assert _extract_git_url_from_text(text) == ("https://github.com/owner/repo.git")
 
 
 class TestCreateDirectoryStructure:
     """Test cases for directory structure creation."""
-    
-    def test_create_directory_default_path(self):
+
+    def test_create_directory_default_path(self) -> None:
         """Test creating directory with default path."""
         with tempfile.TemporaryDirectory() as temp_dir:
             # Mock expanduser to use temp directory
-            with patch('os.path.expanduser', return_value=temp_dir):
+            with patch("os.path.expanduser", return_value=temp_dir):
                 target_dir = create_directory_structure("owner", "repo")
-                
+
                 expected_path = Path(temp_dir) / "owner" / "repo"
                 assert target_dir == expected_path
                 assert target_dir.exists()
                 assert target_dir.is_dir()
-    
-    def test_create_directory_custom_path(self):
+
+    def test_create_directory_custom_path(self) -> None:
         """Test creating directory with custom base path."""
         with tempfile.TemporaryDirectory() as temp_dir:
             base_path = Path(temp_dir) / "custom"
             target_dir = create_directory_structure("owner", "repo", str(base_path))
-            
+
             expected_path = base_path / "owner" / "repo"
             assert target_dir == expected_path
             assert target_dir.exists()
             assert target_dir.is_dir()
-    
-    def test_create_directory_existing(self):
+
+    def test_create_directory_existing(self) -> None:
         """Test creating directory when it already exists."""
         with tempfile.TemporaryDirectory() as temp_dir:
             base_path = Path(temp_dir) / "custom"
             target_dir = create_directory_structure("owner", "repo", str(base_path))
-            
+
             # Create again - should not raise error
             target_dir2 = create_directory_structure("owner", "repo", str(base_path))
-            
+
             assert target_dir == target_dir2
             assert target_dir.exists()
 
 
 class TestCloneRepository:
     """Test cases for repository cloning."""
-    
-    @patch('subprocess.run')
-    def test_clone_success(self, mock_run):
+
+    @patch("subprocess.run")
+    def test_clone_success(self, mock_run) -> None:
         """Test successful repository cloning."""
         mock_run.return_value = MagicMock(
-            returncode=0,
-            stdout="Cloning into 'target'...",
-            stderr=""
+            returncode=0, stdout="Cloning into 'target'...", stderr=""
         )
-        
+
         with tempfile.TemporaryDirectory() as temp_dir:
             target_dir = Path(temp_dir) / "target"
             target_dir.mkdir()
-            
+
             url = "https://github.com/owner/repo.git"
             result = clone_repository(url, target_dir)
-            
+
             assert result is True
             mock_run.assert_called_once_with(
                 ["git", "clone", url, str(target_dir)],
                 capture_output=True,
                 text=True,
-                check=True
+                check=True,
             )
-    
-    @patch('subprocess.run')
-    def test_clone_git_error(self, mock_run):
+
+    @patch("subprocess.run")
+    def test_clone_git_error(self, mock_run) -> None:
         """Test repository cloning with git error."""
         mock_run.side_effect = subprocess.CalledProcessError(
             1, "git", stderr="Repository not found"
         )
-        
+
         with tempfile.TemporaryDirectory() as temp_dir:
             target_dir = Path(temp_dir) / "target"
             target_dir.mkdir()
-            
+
             url = "https://github.com/owner/repo.git"
             result = clone_repository(url, target_dir)
-            
+
             assert result is False
-    
-    @patch('subprocess.run')
-    def test_clone_git_not_found(self, mock_run):
+
+    @patch("subprocess.run")
+    def test_clone_git_not_found(self, mock_run) -> None:
         """Test repository cloning when git is not found."""
         mock_run.side_effect = FileNotFoundError()
-        
+
         with tempfile.TemporaryDirectory() as temp_dir:
             target_dir = Path(temp_dir) / "target"
             target_dir.mkdir()
-            
+
             url = "https://github.com/owner/repo.git"
             result = clone_repository(url, target_dir)
-            
+
             assert result is False
-    
-    def test_clone_non_empty_directory(self):
+
+    def test_clone_non_empty_directory(self) -> None:
         """Test cloning to non-empty directory."""
         with tempfile.TemporaryDirectory() as temp_dir:
             target_dir = Path(temp_dir) / "target"
             target_dir.mkdir()
-            
+
             # Create a file in the directory
             (target_dir / "existing_file.txt").write_text("content")
-            
+
             url = "https://github.com/owner/repo.git"
             result = clone_repository(url, target_dir)
-            
+
             assert result is False
 
 
 class TestGrabFromClipboard:
     """Test cases for grab from clipboard functionality."""
-    
-    @patch('glon.cli._read_clipboard_text')
-    @patch('glon.cli.parse_git_url')
-    def test_grab_git_url_from_clipboard(self, mock_parse, mock_clipboard):
+
+    @patch("glon.cli._read_clipboard_text")
+    @patch("glon.cli.parse_git_url")
+    def test_grab_git_url_from_clipboard(self, mock_parse, mock_clipboard) -> None:
         """Test grabbing git URL from clipboard."""
         mock_clipboard.return_value = "git@github.com:owner/repo.git"
         mock_parse.return_value = ("owner", "repo")
-        
-        with patch('glon.cli.clone_repository', return_value=True) as mock_clone:
-            with patch('glon.cli.create_directory_structure') as mock_create:
+
+        with patch("glon.cli.clone_repository", return_value=True) as mock_clone:
+            with patch("glon.cli.create_directory_structure") as mock_create:
                 mock_create.return_value = Path("/tmp/github/owner/repo")
-                
+
                 from glon.cli import grab_from_clipboard
+
                 result = grab_from_clipboard()
-                
+
                 assert result is True
                 mock_parse.assert_called_once_with("git@github.com:owner/repo.git")
                 mock_create.assert_called_once()
                 mock_clone.assert_called_once()
-    
-    @patch('glon.cli._read_clipboard_text')
-    def test_grab_empty_clipboard(self, mock_clipboard):
+
+    @patch("glon.cli._read_clipboard_text")
+    def test_grab_empty_clipboard(self, mock_clipboard) -> None:
         """Test grabbing from empty clipboard."""
         mock_clipboard.return_value = None
-        
+
         from glon.cli import grab_from_clipboard
+
         result = grab_from_clipboard()
-        
+
         assert result is False
-    
-    @patch('glon.cli._read_clipboard_text')
-    def test_grab_whitespace_clipboard(self, mock_clipboard):
+
+    @patch("glon.cli._read_clipboard_text")
+    def test_grab_whitespace_clipboard(self, mock_clipboard) -> None:
         """Test grabbing from clipboard with only whitespace."""
         mock_clipboard.return_value = "   \n\t  "
-        
+
         from glon.cli import grab_from_clipboard
+
         result = grab_from_clipboard()
-        
+
         assert result is False
-    
-    @patch('glon.cli._read_clipboard_text')
-    def test_grab_invalid_path(self, mock_clipboard):
+
+    @patch("glon.cli._read_clipboard_text")
+    def test_grab_invalid_path(self, mock_clipboard) -> None:
         """Test grabbing invalid path from clipboard."""
         mock_clipboard.return_value = "/nonexistent/path/12345"
-        
+
         from glon.cli import grab_from_clipboard
+
         result = grab_from_clipboard()
-        
+
         assert result is False
-    
-    @patch('glon.cli._read_clipboard_text')
-    @patch('glon.cli.parse_git_url')
-    def test_grab_dry_run(self, mock_parse, mock_clipboard):
+
+    @patch("glon.cli._read_clipboard_text")
+    @patch("glon.cli.parse_git_url")
+    def test_grab_dry_run(self, mock_parse, mock_clipboard) -> None:
         """Test grab with dry run."""
         mock_clipboard.return_value = "git@github.com:owner/repo.git"
         mock_parse.return_value = ("owner", "repo")
-        
+
         from glon.cli import grab_from_clipboard
+
         result = grab_from_clipboard(dry_run=True)
-        
+
         assert result is True
-    
-    @patch('glon.cli._read_clipboard_text')
-    def test_grab_local_directory(self, mock_clipboard):
+
+    @patch("glon.cli._read_clipboard_text")
+    def test_grab_local_directory(self, mock_clipboard) -> None:
         """Test grabbing local directory from clipboard."""
         import tempfile
+
         with tempfile.TemporaryDirectory() as temp_dir:
             mock_clipboard.return_value = temp_dir
-            
+
             from glon.cli import grab_from_clipboard
-            with patch('os.path.expanduser', return_value=temp_dir):
+
+            with patch("os.path.expanduser", return_value=temp_dir):
                 result = grab_from_clipboard(base_path=temp_dir)
-                
+
                 # Should succeed (creates symlink)
                 assert result is True or result is False  # Depends on permissions
-    
-    @patch('glon.cli._read_clipboard_text')
-    @patch('glon.cli.parse_git_url')
-    def test_grab_verbose_mode(self, mock_parse, mock_clipboard):
+
+    @patch("glon.cli._read_clipboard_text")
+    @patch("glon.cli.parse_git_url")
+    def test_grab_verbose_mode(self, mock_parse, mock_clipboard) -> None:
         """Test grab with verbose output."""
         mock_clipboard.return_value = "git@github.com:owner/repo.git"
         mock_parse.return_value = ("owner", "repo")
-        
-        with patch('glon.cli.clone_repository', return_value=True):
-            with patch('glon.cli.create_directory_structure') as mock_create:
+
+        with patch("glon.cli.clone_repository", return_value=True):
+            with patch("glon.cli.create_directory_structure") as mock_create:
                 mock_create.return_value = Path("/tmp/github/owner/repo")
-                
+
                 from glon.cli import grab_from_clipboard
+
                 result = grab_from_clipboard(verbose=True)
-                
+
                 assert result is True
 
 
 class TestCLIIntegration:
     """Integration tests for CLI functionality."""
-    
-    @patch('glon.cli.clone_repository')
-    @patch('glon.cli.create_directory_structure')
-    @patch('glon.cli.parse_git_url')
-    def test_main_successful_clone(self, mock_parse, mock_create, mock_clone):
+
+    @patch("glon.cli.clone_repository")
+    @patch("glon.cli.create_directory_structure")
+    @patch("glon.cli.parse_git_url")
+    def test_main_successful_clone(self, mock_parse, mock_create, mock_clone) -> None:
         """Test main function with successful clone."""
         mock_parse.return_value = ("owner", "repo")
         mock_create.return_value = Path("/tmp/github/owner/repo")
         mock_clone.return_value = True
-        
-        with patch('sys.argv', ['glon', 'https://github.com/owner/repo.git']):
-            with patch('builtins.print') as mock_print:
+
+        with patch("sys.argv", ["glon", "https://github.com/owner/repo.git"]):
+            with patch("builtins.print") as mock_print:
                 from glon.cli import main
+
                 main()
-                
+
                 mock_parse.assert_called_once_with("https://github.com/owner/repo.git")
                 mock_create.assert_called_once_with("owner", "repo", None)
                 mock_clone.assert_called_once()
-                
+
                 # Check success message
-                mock_print.assert_any_call("Repository ready at: /tmp/github/owner/repo")
-    
-    @patch('glon.cli.parse_git_url')
-    def test_main_invalid_url(self, mock_parse):
+                mock_print.assert_any_call(
+                    "Repository ready at: /tmp/github/owner/repo"
+                )
+
+    @patch("glon.cli.parse_git_url")
+    def test_main_invalid_url(self, mock_parse) -> None:
         """Test main function with invalid URL."""
         mock_parse.return_value = None
-        
-        with patch('sys.argv', ['glon', 'invalid-url']):
-            with patch('sys.exit') as mock_exit:
-                with patch('builtins.print') as mock_print:
-                    from glon.cli import main
-                    main()
-                    
-                    mock_exit.assert_not_called()
-                    mock_print.assert_any_call("Error: Invalid git URL format: invalid-url")
 
-    @patch('glon.cli.clone_repository')
-    @patch('glon.cli.create_directory_structure')
-    @patch('glon.cli.parse_git_url')
-    def test_main_clone_failure(self, mock_parse, mock_create, mock_clone):
+        with patch("sys.argv", ["glon", "invalid-url"]):
+            with patch("sys.exit") as mock_exit:
+                with patch("builtins.print") as mock_print:
+                    from glon.cli import main
+
+                    main()
+
+                    mock_exit.assert_not_called()
+                    mock_print.assert_any_call(
+                        "Error: Invalid git URL format: invalid-url"
+                    )
+
+    @patch("glon.cli.clone_repository")
+    @patch("glon.cli.create_directory_structure")
+    @patch("glon.cli.parse_git_url")
+    def test_main_clone_failure(self, mock_parse, mock_create, mock_clone) -> None:
         """Test main function with clone failure."""
         mock_parse.return_value = ("owner", "repo")
         mock_create.return_value = Path("/tmp/github/owner/repo")
         mock_clone.return_value = False
-        
-        with patch('sys.argv', ['glon', 'https://github.com/owner/repo.git']):
-            with patch('builtins.print') as mock_print:
+
+        with patch("sys.argv", ["glon", "https://github.com/owner/repo.git"]):
+            with patch("builtins.print") as mock_print:
                 from glon.cli import main
+
                 main()
-                
+
                 # Should not print success message on failure
-                assert not any("Repository ready at" in str(call) for call in mock_print.call_args_list)
-    
-    @patch('glon.cli.clone_repository')
-    @patch('glon.cli.create_directory_structure')
-    @patch('glon.cli.parse_git_url')
-    def test_main_dry_run(self, mock_parse, mock_create, mock_clone):
+                assert not any(
+                    "Repository ready at" in str(call)
+                    for call in mock_print.call_args_list
+                )
+
+    @patch("glon.cli.clone_repository")
+    @patch("glon.cli.create_directory_structure")
+    @patch("glon.cli.parse_git_url")
+    def test_main_dry_run(self, mock_parse, mock_create, mock_clone) -> None:
         """Test main function with dry run."""
         mock_parse.return_value = ("owner", "repo")
         mock_create.return_value = Path("/tmp/github/owner/repo")
-        
-        with patch('sys.argv', ['glon', '--dry-run', 'https://github.com/owner/repo.git']):
-            with patch('builtins.print') as mock_print:
+
+        with patch(
+            "sys.argv", ["glon", "--dry-run", "https://github.com/owner/repo.git"]
+        ):
+            with patch("builtins.print") as mock_print:
                 from glon.cli import main
+
                 main()
-                
+
                 mock_clone.assert_not_called()
-                mock_print.assert_any_call("Would clone https://github.com/owner/repo.git to /tmp/github/owner/repo")
+                mock_print.assert_any_call(
+                    "Would clone https://github.com/owner/repo.git to "
+                    "/tmp/github/owner/repo"
+                )
+
+    @patch("glon.cli.clone_repository")
+    @patch("glon.cli.create_directory_structure")
+    @patch("glon.cli.parse_git_url")
+    def test_main_clone_subcommand(self, mock_parse, mock_create, mock_clone) -> None:
+        """Accept the explicit clone subcommand without parser errors."""
+        mock_parse.return_value = ("owner", "repo")
+        mock_create.return_value = Path("/tmp/github/owner/repo")
+        mock_clone.return_value = True
+
+        with patch(
+            "sys.argv",
+            ["glon", "clone", "https://github.com/owner/repo.git"],
+        ):
+            from glon.cli import main
+
+            main()
+
+        mock_parse.assert_called_once_with("https://github.com/owner/repo.git")
+        mock_clone.assert_called_once()

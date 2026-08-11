@@ -1,0 +1,111 @@
+# code2llm call graph | /home/tom/github/tom-sapletta-com/glon
+# generated in 0.01s
+# nodes: 33 | edges: 50 | modules: 1
+# CC̄=3.7
+
+HUBS[20]:
+  glon.cli._handle_open
+    CC=10  in:1  out:21  total:22
+  glon.cli._grab_local_path
+    CC=8  in:1  out:16  total:17
+  glon.cli._handle_clone
+    CC=9  in:1  out:16  total:17
+  glon.cli.open_in_ide
+    CC=7  in:4  out:12  total:16
+  glon.cli._select_matching_project
+    CC=10  in:1  out:15  total:16
+  glon.cli._choose_ide
+    CC=6  in:1  out:15  total:16
+  glon.cli.get_all_projects_with_time
+    CC=7  in:4  out:10  total:14
+  glon.cli._resolve_project_path
+    CC=6  in:1  out:13  total:14
+  glon.cli._clone_clipboard_project
+    CC=5  in:1  out:12  total:13
+  glon.cli._open_recent_project
+    CC=3  in:1  out:12  total:13
+  glon.cli.clone_repository
+    CC=4  in:3  out:9  total:12
+  glon.cli.list_projects
+    CC=8  in:1  out:10  total:11
+  glon.cli._handle_list
+    CC=3  in:1  out:9  total:10
+  glon.cli.parse_time_filter
+    CC=8  in:1  out:9  total:10
+  glon.cli._read_clipboard_text
+    CC=7  in:3  out:7  total:10
+  glon.cli.grab_from_clipboard
+    CC=5  in:1  out:8  total:9
+  glon.cli._print_project
+    CC=4  in:1  out:8  total:9
+  glon.cli.parse_git_url
+    CC=3  in:5  out:3  total:8
+  glon.cli._prompt_for_project
+    CC=9  in:2  out:6  total:8
+  glon.cli._parse_ide_option
+    CC=1  in:3  out:5  total:8
+
+MODULES:
+  glon.cli  [33 funcs]
+    _choose_ide  CC=6  out:15
+    _clipboard_url_candidate  CC=7  out:5
+    _clone_clipboard_project  CC=5  out:12
+    _expand_base_path  CC=2  out:2
+    _extract_git_url_from_text  CC=5  out:6
+    _format_project_age  CC=5  out:2
+    _grab_git_url  CC=5  out:6
+    _grab_local_path  CC=8  out:16
+    _handle_clone  CC=9  out:16
+    _handle_grab  CC=1  out:6
+
+EDGES:
+  glon.cli.get_all_projects → glon.cli.get_all_projects_with_time
+  glon.cli.get_all_projects_with_time → glon.cli._expand_base_path
+  glon.cli._extract_git_url_from_text → glon.cli.parse_git_url
+  glon.cli._clipboard_url_candidate → glon.cli._read_clipboard_text
+  glon.cli._clipboard_url_candidate → glon.cli.parse_git_url
+  glon.cli.create_directory_structure → glon.cli._expand_base_path
+  glon.cli.grab_from_clipboard → glon.cli._read_clipboard_text
+  glon.cli.grab_from_clipboard → glon.cli.parse_git_url
+  glon.cli.grab_from_clipboard → glon.cli._grab_local_path
+  glon.cli.grab_from_clipboard → glon.cli._grab_git_url
+  glon.cli._grab_git_url → glon.cli.create_directory_structure
+  glon.cli._grab_git_url → glon.cli.clone_repository
+  glon.cli._grab_local_path → glon.cli._expand_base_path
+  glon.cli.list_projects → glon.cli._expand_base_path
+  glon.cli.list_projects → glon.cli._resolve_filter_date
+  glon.cli.list_projects → glon.cli._print_projects
+  glon.cli.list_projects → glon.cli.get_all_projects_with_time
+  glon.cli._resolve_filter_date → glon.cli.parse_time_filter
+  glon.cli._print_projects → glon.cli._print_project
+  glon.cli.open_in_ide → glon.cli._resolve_project_path
+  glon.cli.open_in_ide → glon.cli._choose_ide
+  glon.cli._print_project_choices → glon.cli._format_project_age
+  glon.cli._clone_clipboard_project → glon.cli.parse_git_url
+  glon.cli._clone_clipboard_project → glon.cli.create_directory_structure
+  glon.cli._clone_clipboard_project → glon.cli.clone_repository
+  glon.cli._open_from_clipboard → glon.cli._read_clipboard_text
+  glon.cli._open_from_clipboard → glon.cli._extract_git_url_from_text
+  glon.cli._open_from_clipboard → glon.cli._clone_clipboard_project
+  glon.cli._open_from_clipboard → glon.cli.open_in_ide
+  glon.cli._open_from_clipboard → glon.cli._parse_ide_option
+  glon.cli._open_recent_project → glon.cli._print_project_choices
+  glon.cli._open_recent_project → glon.cli._prompt_for_project
+  glon.cli._open_recent_project → glon.cli.open_in_ide
+  glon.cli._open_recent_project → glon.cli.get_all_projects_with_time
+  glon.cli._open_recent_project → glon.cli._parse_ide_option
+  glon.cli._select_matching_project → glon.cli._print_project_choices
+  glon.cli._handle_open → glon.cli.get_all_projects
+  glon.cli._handle_open → glon.cli.get_all_projects_with_time
+  glon.cli._handle_open → glon.cli._select_matching_project
+  glon.cli._handle_open → glon.cli.open_in_ide
+  glon.cli._handle_list → glon.cli.list_projects
+  glon.cli._handle_grab → glon.cli.grab_from_clipboard
+  glon.cli._handle_clone → glon.cli.parse_git_url
+  glon.cli._handle_clone → glon.cli.create_directory_structure
+  glon.cli._handle_clone → glon.cli.clone_repository
+  glon.cli._handle_clone → glon.cli._clipboard_url_candidate
+  glon.cli.main → glon.cli._handle_clone
+  glon.cli.main → glon.cli._handle_open
+  glon.cli.main → glon.cli._handle_list
+  glon.cli.main → glon.cli._handle_grab

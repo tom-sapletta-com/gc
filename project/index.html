@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<!-- generated in 0.00s -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>code2llm Analysis Results</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface-hover: #334155;
+            --border: #475569;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #22c55e;
+            --warning: #eab308;
+            --error: #ef4444;
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg: #f8fafc;
+                --surface: #ffffff;
+                --surface-hover: #f1f5f9;
+                --border: #e2e8f0;
+                --text: #1e293b;
+                --text-muted: #64748b;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header h1 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .search {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .search input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            color: var(--text);
+            font-size: 0.875rem;
+            outline: none;
+        }
+
+        .search input:focus {
+            border-color: var(--accent);
+        }
+
+        .search input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .file-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+
+        .file-group {
+            margin-bottom: 1rem;
+        }
+
+        .file-group-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            padding: 0.5rem 0.75rem;
+            font-weight: 600;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.625rem 0.75rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            margin-bottom: 0.125rem;
+        }
+
+        .file-item:hover {
+            background: var(--surface-hover);
+        }
+
+        .file-item.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .file-item.active .file-meta {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .file-icon {
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .file-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-size {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        /* Content */
+        .content {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .content-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+        }
+
+        .content-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .content-title h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .content-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.5rem 1rem;
+            background: var(--surface-hover);
+            color: var(--text);
+            text-decoration: none;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.15s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: var(--border);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .content-body {
+            flex: 1;
+            overflow: auto;
+            padding: 1.5rem;
+        }
+
+        /* Welcome */
+        .welcome {
+            max-width: 800px;
+        }
+
+        .welcome h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .welcome p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* Content Display */
+        pre {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            overflow-x: auto;
+            font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        code {
+            font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+        }
+
+        .markdown-content {
+            line-height: 1.7;
+        }
+
+        .markdown-content h1,
+        .markdown-content h2,
+        .markdown-content h3 {
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .markdown-content h1 {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .markdown-content p {
+            margin-bottom: 1rem;
+        }
+
+        .markdown-content code {
+            background: var(--surface);
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-size: 0.875em;
+        }
+
+        .markdown-content pre code {
+            background: transparent;
+            padding: 0;
+        }
+
+        .markdown-content ul,
+        .markdown-content ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .markdown-content li {
+            margin-bottom: 0.25rem;
+        }
+
+        .markdown-content blockquote {
+            border-left: 4px solid var(--accent);
+            padding-left: 1rem;
+            margin-left: 0;
+            color: var(--text-muted);
+        }
+
+        .markdown-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .markdown-content th,
+        .markdown-content td {
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            text-align: left;
+        }
+
+        .markdown-content th {
+            background: var(--surface);
+        }
+
+        .markdown-content img {
+            max-width: 100%;
+            border-radius: 0.5rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+
+        /* Mermaid */
+        .mermaid-content {
+            background: var(--surface);
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+
+        .mermaid-content pre {
+            background: transparent;
+            border: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Image Preview */
+        .image-preview {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            background: var(--surface);
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .sidebar.open {
+                display: flex;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 100;
+            }
+
+            .file-size {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="header">
+                <h1>🔍 code2llm</h1>
+                <p>Analysis Results Browser</p>
+            </div>
+            <div class="search">
+                <input type="text" id="search" placeholder="Search files..." oninput="filterFiles(this.value)">
+            </div>
+            <div class="file-list" id="fileList">
+                <!-- Files will be rendered here -->
+            </div>
+        </aside>
+
+        <main class="content">
+            <div class="content-header">
+                <div class="content-title">
+                    <span id="contentIcon">📁</span>
+                    <h2 id="contentTitle">Welcome</h2>
+                </div>
+                <div class="content-actions" id="contentActions">
+                    <!-- Actions will be rendered here -->
+                </div>
+            </div>
+            <div class="content-body" id="contentBody">
+                <div class="welcome">
+                    <h2>Analysis Results</h2>
+                    <p>Select a file from the sidebar to view its contents. This interface works on GitHub Pages without any server required.</p>  # noqa: E501
+                    <div class="stats-grid" id="statsGrid">
+                        <!-- Stats will be rendered here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Initialize mermaid
+        mermaid.initialize({ startOnLoad: false, theme: 'dark' });
+
+        const files = [{"name": "dashboard.html", "rel_path": "dashboard.html", "path": "dashboard.html", "size": "12.2KB", "icon": "🌐", "type": "html", "type_name": "HTML", "content": "[Binary file]", "is_subdir": false}, {"name": "calls.png", "rel_path": "calls.png", "path": "calls.png", "size": "97.0KB", "icon": "🖼️", "type": "image", "type_name": "Image", "content": "[Binary file]", "is_subdir": false}, {"name": "compact_flow.png", "rel_path": "compact_flow.png", "path": "compact_flow.png", "size": "5.6KB", "icon": "🖼️", "type": "image", "type_name": "Image", "content": "[Binary file]", "is_subdir": false}, {"name": "flow.png", "rel_path": "flow.png", "path": "flow.png", "size": "16.3KB", "icon": "🖼️", "type": "image", "type_name": "Image", "content": "[Binary file]", "is_subdir": false}, {"name": "README.md", "rel_path": "README.md", "path": "README.md", "size": "9.5KB", "icon": "📝", "type": "markdown", "type_name": "Markdown", "content": "# code2llm - Generated Analysis Files\n<!-- generated in 0.00s -->\n\nThis directory contains the complete analysis of your project generated by `code2llm`. Each file serves a specific purpose for understanding, refactoring, and documenting your codebase.  # noqa: E501\n\n## 📁 Generated Files Overview\n\nWhen you run `code2llm ./ -f all`, the following files are created:\n\n### 🎯 Core Analysis Files\n\n| File | Format | Purpose | Key Insights |\n|------|--------|---------|--------------|\n| `analysis.toon` | **TOON** | **🔥 Health diagnostics** - Health, LAYERS, COUPLING | 4 critical functions, 0 god modules |\n| `evolution.toon.yaml` | **YAML** | **📋 Refactoring queue** - Prioritized improvements | 0 refactoring actions needed |\n| `map.toon.yaml` | **YAML** | **🗺️ Structural map + project header** - Modules, imports, exports, signatures, stats, alerts, hotspots, trend | Project architecture overview |\n\n### 🤖 LLM-Ready Documentation\n\n| File | Format | Purpose | Use Case |\n|------|--------|---------|----------|\n| `prompt.txt` | **Text** | **📝 Ready-to-send prompt** - Lists all files with instructions | Attach to LLM conversation as context guide |\n| `context.md` | **Markdown** | **📖 LLM narrative** - Architecture summary | Paste into ChatGPT/Claude for code analysis |\n\n### 📊 Visualizations\n\n| File | Format | Purpose | Description |\n|------|--------|---------|-------------|\n| `flow.mmd` | **Mermaid** | **🔄 Control flow diagram** | Function call paths with complexity styling |\n| `calls.mmd` | **Mermaid** | **📞 Call graph** | Function dependencies (edges only) |\n| `compact_flow.mmd` | **Mermaid** | **📦 Module overview** | Aggregated module-level view |\n\n## 🚀 Quick Start Commands\n\n### Basic Analysis\n```bash\n# Quick health check (TOON format only)\ncode2llm ./ -f toon\n\n# Generate all formats (what created these files)\ncode2llm ./ -f all\n\n# LLM-ready context only\ncode2llm ./ -f context\n```\n\n### Performance Options\n```bash\n# Fast analysis for large projects\ncode2llm ./ -f toon --strategy quick\n\n# Memory-limited analysis\ncode2llm ./ -f all --max-memory 500\n\n# Skip PNG generation (faster)\ncode2llm ./ -f all --no-png\n```\n\n### Refactoring Focus\n```bash\n# Get refactoring recommendations\ncode2llm ./ -f evolution\n\n# Focus on specific code smells\ncode2llm ./ -f toon --refactor --smell god_function\n\n# Data flow analysis\ncode2llm ./ -f flow --data-flow\n```\n\n## 📖 Understanding Each File\n\n### `analysis.toon` - Health Diagnostics\n**Purpose**: Quick overview of code health issues\n**Key sections**:\n- **HEALTH**: Critical issues (🔴) and warnings (🟡)\n- **REFACTOR**: Prioritized refactoring actions\n- **COUPLING**: Module dependencies and potential cycles\n- **LAYERS**: Package complexity metrics\n- **FUNCTIONS**: High-complexity functions (CC ≥ 10)\n- **CLASSES**: Complex classes needing attention\n\n**Example usage**:\n```bash\n# View health issues\ncat analysis.toon | head -30\n\n# Check refactoring priorities\ngrep \"REFACTOR\" analysis.toon\n```\n\n### `evolution.toon.yaml` - Refactoring Queue\n**Purpose**: Step-by-step refactoring plan\n**Key sections**:\n- **NEXT**: Immediate actions to take\n- **RISKS**: Potential breaking changes\n- **METRICS-TARGET**: Success criteria\n\n**Example usage**:\n```bash\n# Get refactoring plan\ncat evolution.toon.yaml\n\n# Track progress\ngrep \"NEXT\" evolution.toon.yaml\n```\n\n### `flow.toon` - Legacy Data Flow Analysis\n**Purpose**: Understand data movement through the system (legacy / explicit opt-in)\n**Key sections**:\n- **PIPELINES**: Data processing chains\n- **CONTRACTS**: Function input/output contracts\n- **SIDE_EFFECTS**: Functions with external impacts\n\n**Example usage**:\n```bash\n# Find data pipelines\ngrep \"PIPELINES\" flow.toon\n\n# Identify side effects\ngrep \"SIDE_EFFECTS\" flow.toon\n```\n\n### `map.toon.yaml` - Structural Map + Project Header\n**Purpose**: High-level architecture overview plus compact project header\n**Key sections**:\n- **MODULES**: All modules with basic stats\n- **IMPORTS**: Dependency relationships\n- **EXPORTS**: Public API surface and signatures\n- **HEADER**: Stats, alerts, hotspots, evolution trend\n\n**Example usage**:\n```bash\n# See project structure\ncat map.toon.yaml | head -50\n\n# Find public APIs\ngrep \"SIGNATURES\" map.toon.yaml\n```\n\n### `project.toon.yaml` - Compact Analysis View\n**Purpose**: Compact module view generated from project.yaml data\n**Status**: Legacy view generated on demand from unified project.yaml\n\n**Example usage**:\n```bash\n# View compact project structure\ncat project.toon.yaml | head -30\n\n# Find largest files\ngrep -E \"^  .*[0-9]{3,}$\" project.toon.yaml | sort -t',' -k2 -n -r | head -10\n```\n\n### `prompt.txt` - Ready-to-Send LLM Prompt\n**Purpose**: Pre-formatted prompt listing all generated files for LLM conversation\n**Generation**: Written when `code2llm` runs with a source path and requests `-f all` (including `--no-chunk`) or `code2logic`  # noqa: E501\n**Contents**:\n- **Files section**: Lists all existing generated files with descriptions, including `project.toon.yaml` when generated by `-f all`  # noqa: E501\n- **Source files section**: Highlights important source files such as `cli_exports/orchestrator.py`\n- **Missing section**: Shows which files weren't generated (if any)\n- **Task section**: Refactoring brief with concrete execution instructions, not just analysis\n- **Priority Order section**: State-dependent refactoring priorities, starting with blockers and then architecture cleanup  # noqa: E501\n- **Requirements section**: Guidelines for suggested changes\n\n**Example usage**:\n```bash\n# View the prompt\ncat prompt.txt\n\n# Copy to clipboard and paste into ChatGPT/Claude\ncat prompt.txt | pbcopy  # macOS\ncat prompt.txt | xclip -sel clip  # Linux\n```\n\n### `context.md` - LLM Narrative\n**Purpose**: Ready-to-paste context for AI assistants\n**Key sections**:\n- **Overview**: Project statistics\n- **Architecture**: Module breakdown\n- **Entry Points**: Public interfaces\n- **Patterns**: Design patterns detected\n\n**Example usage**:\n```bash\n# Copy to clipboard for LLM\ncat context.md | pbcopy  # macOS\ncat context.md | xclip -sel clip  # Linux\n\n# Use with Claude/ChatGPT for code analysis\n```\n\n### Visualization Files (`*.mmd`, `*.png`)\n**Purpose**: Visual understanding of code structure\n**Files**:\n- `flow.mmd` - Detailed control flow with complexity colors\n- `calls.mmd` - Simple call graph\n- `compact_flow.mmd` - High-level module view\n- `*.png` - Pre-rendered images\n\n**Example usage**:\n```bash\n# View diagrams\nopen flow.png  # macOS\nxdg-open flow.png  # Linux\n\n# Edit in Mermaid Live Editor\n# Copy content of .mmd files to https://mermaid.live\n```\n\n## 🔍 Common Analysis Patterns\n\n### 1. Code Health Assessment\n```bash\n# Quick health check\ncode2llm ./ -f toon\ncat analysis.toon | grep -E \"(HEALTH|REFACTOR)\"\n```\n\n### 2. Refactoring Planning\n```bash\n# Get refactoring queue\ncode2llm ./ -f evolution\ncat evolution.toon.yaml\n\n# Focus on specific issues\ncode2llm ./ -f toon --refactor --smell god_function\n```\n\n### 3. LLM Assistance\n```bash\n# Generate context for AI\ncode2llm ./ -f context\ncat context.md\n\n# Use with Claude: \"Based on this context, help me refactor the god modules\"\n```\n\n### 4. Team Documentation\n```bash\n# Generate all docs for team\ncode2llm ./ -f all -o ./docs/\n\n# Create visual diagrams\nopen docs/flow.png\n```\n\n## 📊 Interpreting Metrics\n\n### Complexity Metrics (CC)\n- **🔴 Critical (≥5.0)**: Immediate refactoring needed\n- **🟠 High (3.0-4.9)**: Consider refactoring\n- **🟡 Medium (1.5-2.9)**: Monitor complexity\n- **🟢 Low (0.1-1.4)**: Acceptable\n- **⚪ Basic (0.0)**: Simple functions\n\n### Module Health\n- **GOD Module**: Too large (>500 lines, >20 methods)\n- **HUB**: High fan-out (calls many modules)\n- **FAN-IN**: High incoming dependencies\n- **CYCLES**: Circular dependencies\n\n### Data Flow Indicators\n- **PIPELINE**: Sequential data processing\n- **CONTRACT**: Clear input/output specification\n- **SIDE_EFFECT**: External state modification\n\n## 🛠️ Integration Examples\n\n### CI/CD Pipeline\n```bash\n#!/bin/bash\n# Analyze code quality in CI\ncode2llm ./ -f toon -o ./analysis\nif grep -q \"🔴 GOD\" ./analysis/analysis.toon; then\n    echo \"❌ God modules detected\"\n    exit 1\nfi\n```\n\n### Pre-commit Hook\n```bash\n#!/bin/sh\n# .git/hooks/pre-commit\ncode2llm ./ -f toon -o ./temp_analysis\nif grep -q \"🔴\" ./temp_analysis/analysis.toon; then\n    echo \"⚠️  Critical issues found. Review before committing.\"\nfi\nrm -rf ./temp_analysis\n```\n\n### Documentation Generation\n```bash\n# Generate docs for README\ncode2llm ./ -f context -o ./docs/\necho \"## Architecture\" >> README.md\ncat docs/context.md >> README.md\n```\n\n## 📚 Next Steps\n\n1. **Review `analysis.toon`** - Identify critical issues\n2. **Check `evolution.toon.yaml`** - Plan refactoring priorities\n3. **Use `context.md`** - Get LLM assistance for complex changes\n4. **Reference visualizations** - Understand system architecture\n5. **Track progress** - Re-run analysis after changes\n\n## 🔧 Advanced Usage\n\n### Custom Analysis\n```bash\n# Deep analysis with all insights\ncode2llm ./ -m hybrid -f all --max-depth 15 -v\n\n# Performance-optimized\ncode2llm ./ -m static -f toon --strategy quick\n\n# Refactoring-focused\ncode2llm ./ -f toon,evolution --refactor\n```\n\n### Output Customization\n```bash\n# Separate output directories\ncode2llm ./ -f all -o ./analysis-$(date +%Y%m%d)\n\n# Split YAML into multiple files\ncode2llm ./ -f yaml --split-output\n\n# Separate orphaned functions\ncode2llm ./ -f yaml --separate-orphans\n```\n\n---\n\n**Generated by**: `code2llm ./ -f all --readme`  \n**Analysis Date**: 2026-08-11  \n**Total Functions**: 64  \n**Total Classes**: 3  \n**Modules**: 12  \n\nFor more information about code2llm, visit: https://github.com/tom-sapletta/code2llm\n", "is_subdir": false}, {"name": "context.md", "rel_path": "context.md", "path": "context.md", "size": "11.0KB", "icon": "📝", "type": "markdown", "type_name": "Markdown", "content": "# System Architecture Analysis\n<!-- generated in 0.00s -->\n\n## Overview\n\n- **Project**: /home/tom/github/tom-sapletta-com/glon\n- **Primary Language**: python\n- **Languages**: python: 4, yaml: 3, shell: 2, txt: 1, toml: 1\n- **Analysis Mode**: static\n- **Total Functions**: 64\n- **Total Classes**: 3\n- **Modules**: 12\n- **Entry Points**: 29\n\n## Architecture by Module\n\n### glon.cli\n- **Functions**: 36\n- **Classes**: 1\n- **File**: `cli.py`\n\n### glon.core\n- **Functions**: 19\n- **Classes**: 2\n- **File**: `core.py`\n\n### glon.utils\n- **Functions**: 9\n- **File**: `utils.py`\n\n## Key Entry Points\n\nMain execution flows into the system:\n\n### glon.utils.analyze_memory_usage\n> Summarize process memory, GC state, and common tracked types.\n- **Calls**: psutil.Process, process.memory_info, gc.get_objects, ImportError, os.getpid, sorted, time.time, type\n\n### glon.utils.monitor_memory_usage\n> Sample process memory and GC counters for a fixed duration.\n- **Calls**: psutil.Process, time.time, ImportError, os.getpid, process.memory_info, samples.append, time.sleep, time.time\n\n### glon.utils.find_object_cycles\n> Find reference cycles reachable from an object within a depth limit.\n- **Calls**: set, _find_cycles, id, visited.add, path.append, path_ids.append, path_ids.pop, path.pop\n\n### glon.core.MemoryProfiler.take_snapshot\n> Capture process memory and garbage-collector counters.\n- **Calls**: self.snapshots.append, psutil.Process, process.memory_info, os.getpid, time.time, len, gc.get_count, time.time\n\n### glon.utils.force_garbage_collection\n> Collect every GC generation and return per-generation counters.\n- **Calls**: range, len, gc.collect, len, gc.get_objects, gc.get_objects, print\n\n### glon.utils.create_memory_logger\n> Return the shared memory logger with one file handler.\n- **Calls**: logging.getLogger, logger.setLevel, logging.FileHandler, handler.setLevel, logging.Formatter, handler.setFormatter, logger.addHandler\n\n### glon.core.GarbageCollector._record_stats\n> Record current statistics for monitoring.\n- **Calls**: self.stats_history.append, time.time, self.get_count, self.get_stats, len, self.get_objects\n\n### glon.cli.main\n> Dispatch the requested CLI command.\n- **Calls**: list, glon.cli._handle_clone, glon.cli._handle_open, glon.cli._handle_list, glon.cli._handle_grab\n\n### glon.utils.cleanup_temp_files\n> Remove matching regular files from the system temporary directory.\n- **Calls**: tempfile.gettempdir, os.listdir, os.path.join, os.path.isfile, os.remove\n\n### glon.core.GarbageCollector.get_memory_summary\n> Get a summary of memory usage and garbage collection status.\n- **Calls**: self.get_count, self.get_stats, len, gc.get_threshold, self.get_objects\n\n### glon.core.MemoryProfiler.track_object\n> Track an object by weak reference when its type permits it.\n- **Calls**: str, id, weakref.ref, time.time, type\n\n### glon.core.MemoryProfiler.compare_snapshots\n> Return counter differences between two stored snapshots.\n- **Calls**: IndexError, snap1.get, snap2.get, len, len\n\n### glon.core.MemoryProfiler.get_tracked_objects\n> Get information about tracked objects.\n- **Calls**: self.weak_refs.items, info.get, info.get\n\n### glon.core.GarbageCollector.collect\n> Collect one generation and record the resulting GC statistics.\n- **Calls**: gc.collect, self._record_stats\n\n### glon.utils.get_object_size\n> Return the shallow size of an object, or zero if unavailable.\n- **Calls**: sys.getsizeof\n\n### glon.utils.set_debug_gc\n> Set garbage-collector debug flags.\n- **Calls**: gc.set_debug\n\n### glon.utils.clear_gc_debug\n> Clear garbage collection debug flags.\n- **Calls**: gc.set_debug\n\n### glon.core.GarbageCollector.__init__\n- **Calls**: gc.isenabled\n\n### glon.core.GarbageCollector.enable\n> Enable garbage collection.\n- **Calls**: gc.enable\n\n### glon.core.GarbageCollector.disable\n> Disable garbage collection.\n- **Calls**: gc.disable\n\n### glon.core.GarbageCollector.get_stats\n> Get current garbage collection statistics.\n- **Calls**: gc.get_stats\n\n### glon.core.GarbageCollector.get_count\n> Get current garbage collection counts.\n- **Calls**: gc.get_count\n\n### glon.core.GarbageCollector.set_threshold\n> Set garbage collection threshold.\n- **Calls**: gc.set_threshold\n\n### glon.core.GarbageCollector.get_objects\n> Get all objects currently tracked by the garbage collector.\n- **Calls**: gc.get_objects\n\n### glon.core.GarbageCollector.get_referrers\n> Get all objects that refer to the given object.\n- **Calls**: gc.get_referrers\n\n### glon.core.GarbageCollector.get_referents\n> Get all objects referred to by the given object.\n- **Calls**: gc.get_referents\n\n### glon.core.MemoryProfiler.clear_snapshots\n> Clear all stored snapshots.\n- **Calls**: self.snapshots.clear\n\n### glon.core.MemoryProfiler.clear_tracking\n> Clear all tracked objects.\n- **Calls**: self.weak_refs.clear\n\n### glon.core.MemoryProfiler.__init__\n\n## Process Flows\n\nKey execution flows identified:\n\n### Flow 1: analyze_memory_usage\n```\nanalyze_memory_usage [glon.utils]\n```\n\n### Flow 2: monitor_memory_usage\n```\nmonitor_memory_usage [glon.utils]\n```\n\n### Flow 3: find_object_cycles\n```\nfind_object_cycles [glon.utils]\n```\n\n### Flow 4: take_snapshot\n```\ntake_snapshot [glon.core.MemoryProfiler]\n```\n\n### Flow 5: force_garbage_collection\n```\nforce_garbage_collection [glon.utils]\n```\n\n### Flow 6: create_memory_logger\n```\ncreate_memory_logger [glon.utils]\n```\n\n### Flow 7: _record_stats\n```\n_record_stats [glon.core.GarbageCollector]\n```\n\n### Flow 8: main\n```\nmain [glon.cli]\n  └─> _handle_clone\n      └─> parse_git_url\n      └─> create_directory_structure\n          └─> _expand_base_path\n  └─> _handle_open\n      └─> get_all_projects\n          └─> get_all_projects_with_time\n      └─> get_all_projects_with_time\n```\n\n### Flow 9: cleanup_temp_files\n```\ncleanup_temp_files [glon.utils]\n```\n\n### Flow 10: get_memory_summary\n```\nget_memory_summary [glon.core.GarbageCollector]\n```\n\n## Key Classes\n\n### glon.core.GarbageCollector\n> Enhanced garbage collector with monitoring and control features.\n- **Methods**: 12\n- **Key Methods**: glon.core.GarbageCollector.__init__, glon.core.GarbageCollector.enable, glon.core.GarbageCollector.disable, glon.core.GarbageCollector.collect, glon.core.GarbageCollector.get_stats, glon.core.GarbageCollector.get_count, glon.core.GarbageCollector.set_threshold, glon.core.GarbageCollector.get_objects, glon.core.GarbageCollector.get_referrers, glon.core.GarbageCollector.get_referents\n\n### glon.core.MemoryProfiler\n> Memory profiling and monitoring utilities.\n- **Methods**: 7\n- **Key Methods**: glon.core.MemoryProfiler.__init__, glon.core.MemoryProfiler.take_snapshot, glon.core.MemoryProfiler.track_object, glon.core.MemoryProfiler.get_tracked_objects, glon.core.MemoryProfiler.compare_snapshots, glon.core.MemoryProfiler.clear_snapshots, glon.core.MemoryProfiler.clear_tracking\n\n### glon.cli.ProjectInfo\n> Filesystem metadata used by project listing and selection.\n- **Methods**: 0\n- **Inherits**: TypedDict\n\n## Data Transformation Functions\n\nKey functions that process and transform data:\n\n### glon.cli.parse_git_url\n> Parse a supported SSH or HTTPS URL into owner and repository names.\n- **Output to**: pattern.fullmatch, match.group, match.group\n\n### glon.cli.parse_time_filter\n> Convert a supported relative-time label to a cutoff timestamp.\n- **Output to**: None.strip, datetime.now, filter_str.lower, timedelta, timedelta\n\n### glon.cli._parse_ide_option\n- **Output to**: argparse.ArgumentParser, parser.add_argument, parser.parse_known_args, cast, list\n\n### glon.cli._format_project_age\n- **Output to**: now.replace, timedelta\n\n### glon.cli._build_open_parser\n- **Output to**: argparse.ArgumentParser, parser.add_argument, parser.add_argument, setattr, argcomplete.autocomplete\n\n### glon.cli._build_clone_parser\n- **Output to**: argparse.ArgumentParser, parser.add_argument, parser.add_argument, parser.add_argument, parser.add_argument\n\n## Public API Surface\n\nFunctions exposed as public API (no underscore prefix):\n\n- `glon.utils.analyze_memory_usage` - 16 calls\n- `glon.utils.monitor_memory_usage` - 13 calls\n- `glon.utils.find_object_cycles` - 13 calls\n- `glon.cli.open_in_ide` - 12 calls\n- `glon.core.MemoryProfiler.take_snapshot` - 12 calls\n- `glon.cli.get_all_projects_with_time` - 10 calls\n- `glon.cli.list_projects` - 10 calls\n- `glon.cli.clone_repository` - 9 calls\n- `glon.cli.parse_time_filter` - 9 calls\n- `glon.cli.grab_from_clipboard` - 8 calls\n- `glon.utils.force_garbage_collection` - 7 calls\n- `glon.utils.create_memory_logger` - 7 calls\n- `glon.cli.main` - 5 calls\n- `glon.utils.cleanup_temp_files` - 5 calls\n- `glon.core.GarbageCollector.get_memory_summary` - 5 calls\n- `glon.core.MemoryProfiler.track_object` - 5 calls\n- `glon.core.MemoryProfiler.compare_snapshots` - 5 calls\n- `glon.cli.parse_git_url` - 3 calls\n- `glon.core.MemoryProfiler.get_tracked_objects` - 3 calls\n- `glon.cli.get_all_projects` - 2 calls\n- `glon.cli.create_directory_structure` - 2 calls\n- `glon.core.GarbageCollector.collect` - 2 calls\n- `glon.utils.get_object_size` - 1 calls\n- `glon.utils.set_debug_gc` - 1 calls\n- `glon.utils.clear_gc_debug` - 1 calls\n- `glon.core.GarbageCollector.enable` - 1 calls\n- `glon.core.GarbageCollector.disable` - 1 calls\n- `glon.core.GarbageCollector.get_stats` - 1 calls\n- `glon.core.GarbageCollector.get_count` - 1 calls\n- `glon.core.GarbageCollector.set_threshold` - 1 calls\n- `glon.core.GarbageCollector.get_objects` - 1 calls\n- `glon.core.GarbageCollector.get_referrers` - 1 calls\n- `glon.core.GarbageCollector.get_referents` - 1 calls\n- `glon.core.MemoryProfiler.clear_snapshots` - 1 calls\n- `glon.core.MemoryProfiler.clear_tracking` - 1 calls\n\n## System Interactions\n\nHow components interact:\n\n```mermaid\ngraph TD\n    analyze_memory_usage --> Process\n    analyze_memory_usage --> memory_info\n    analyze_memory_usage --> get_objects\n    analyze_memory_usage --> ImportError\n    analyze_memory_usage --> getpid\n    monitor_memory_usage --> Process\n    monitor_memory_usage --> time\n    monitor_memory_usage --> ImportError\n    monitor_memory_usage --> getpid\n    monitor_memory_usage --> memory_info\n    find_object_cycles --> set\n    find_object_cycles --> _find_cycles\n    find_object_cycles --> id\n    find_object_cycles --> add\n    find_object_cycles --> append\n    take_snapshot --> append\n    take_snapshot --> Process\n    take_snapshot --> memory_info\n    take_snapshot --> getpid\n    take_snapshot --> time\n    force_garbage_collec --> range\n    force_garbage_collec --> len\n    force_garbage_collec --> collect\n    force_garbage_collec --> get_objects\n    create_memory_logger --> getLogger\n    create_memory_logger --> setLevel\n    create_memory_logger --> FileHandler\n    create_memory_logger --> Formatter\n    _record_stats --> append\n    _record_stats --> time\n```\n\n## Reverse Engineering Guidelines\n\n1. **Entry Points**: Start analysis from the entry points listed above\n2. **Core Logic**: Focus on classes with many methods\n3. **Data Flow**: Follow data transformation functions\n4. **Process Flows**: Use the flow diagrams for execution paths\n5. **API Surface**: Public API functions reveal the interface\n\n## Context for LLM\n\nMaintain the identified architectural patterns and public API surface when suggesting changes.", "is_subdir": false}, {"name": "calls.mmd", "rel_path": "calls.mmd", "path": "calls.mmd", "size": "5.2KB", "icon": "📈", "type": "mermaid", "type_name": "Mermaid", "content": "flowchart LR\n%% generated in 0.00s\n    subgraph glon__cli\n        glon__cli__get_all_projects_with_time[&quot;get_all_projects_with_time&quot;]\n        glon__cli__main[&quot;main&quot;]\n        glon__cli__get_all_projects[&quot;get_all_projects&quot;]\n        glon__cli__open_in_ide[&quot;open_in_ide&quot;]\n        glon__cli__parse_git_url[&quot;parse_git_url&quot;]\n        glon__cli___grab_local_path[&quot;_grab_local_path&quot;]\n        glon__cli___handle_list[&quot;_handle_list&quot;]\n        glon__cli__list_projects[&quot;list_projects&quot;]\n        glon__cli___handle_clone[&quot;_handle_clone&quot;]\n        glon__cli___handle_grab[&quot;_handle_grab&quot;]\n        glon__cli__grab_from_clipboard[&quot;grab_from_clipboard&quot;]\n        glon__cli__clone_repository[&quot;clone_repository&quot;]\n        glon__cli___clipboard_url_candidate[&quot;_clipboard_url_candidate&quot;]\n        glon__cli___resolve_project_path[&quot;_resolve_project_path&quot;]\n        glon__cli___format_project_age[&quot;_format_project_age&quot;]\n        glon__cli___select_matching_project[&quot;_select_matching_project&quot;]\n        glon__cli___choose_ide[&quot;_choose_ide&quot;]\n        glon__cli___clone_clipboard_project[&quot;_clone_clipboard_project&quot;]\n        glon__cli___prompt_for_project[&quot;_prompt_for_project&quot;]\n        glon__cli___extract_git_url_from_text[&quot;_extract_git_url_from_text&quot;]\n        glon__cli___grab_git_url[&quot;_grab_git_url&quot;]\n        glon__cli__create_directory_structure[&quot;create_directory_structure&quot;]\n        glon__cli__parse_time_filter[&quot;parse_time_filter&quot;]\n        glon__cli___open_recent_project[&quot;_open_recent_project&quot;]\n        glon__cli___print_projects[&quot;_print_projects&quot;]\n        glon__cli___print_project[&quot;_print_project&quot;]\n        glon__cli___read_clipboard_text[&quot;_read_clipboard_text&quot;]\n        glon__cli___open_from_clipboard[&quot;_open_from_clipboard&quot;]\n        glon__cli___parse_ide_option[&quot;_parse_ide_option&quot;]\n        glon__cli___handle_open[&quot;_handle_open&quot;]\n        glon__cli___print_project_choices[&quot;_print_project_choices&quot;]\n        glon__cli___resolve_filter_date[&quot;_resolve_filter_date&quot;]\n        glon__cli___expand_base_path[&quot;_expand_base_path&quot;]\n    end\n    glon__cli__get_all_projects --&gt; glon__cli__get_all_projects_with_time\n    glon__cli__get_all_projects_with_time --&gt; glon__cli___expand_base_path\n    glon__cli___extract_git_url_from_text --&gt; glon__cli__parse_git_url\n    glon__cli___clipboard_url_candidate --&gt; glon__cli___read_clipboard_text\n    glon__cli___clipboard_url_candidate --&gt; glon__cli__parse_git_url\n    glon__cli__create_directory_structure --&gt; glon__cli___expand_base_path\n    glon__cli__grab_from_clipboard --&gt; glon__cli___read_clipboard_text\n    glon__cli__grab_from_clipboard --&gt; glon__cli__parse_git_url\n    glon__cli__grab_from_clipboard --&gt; glon__cli___grab_local_path\n    glon__cli__grab_from_clipboard --&gt; glon__cli___grab_git_url\n    glon__cli___grab_git_url --&gt; glon__cli__create_directory_structure\n    glon__cli___grab_git_url --&gt; glon__cli__clone_repository\n    glon__cli___grab_local_path --&gt; glon__cli___expand_base_path\n    glon__cli__list_projects --&gt; glon__cli___expand_base_path\n    glon__cli__list_projects --&gt; glon__cli___resolve_filter_date\n    glon__cli__list_projects --&gt; glon__cli___print_projects\n    glon__cli__list_projects --&gt; glon__cli__get_all_projects_with_time\n    glon__cli___resolve_filter_date --&gt; glon__cli__parse_time_filter\n    glon__cli___print_projects --&gt; glon__cli___print_project\n    glon__cli__open_in_ide --&gt; glon__cli___resolve_project_path\n    glon__cli__open_in_ide --&gt; glon__cli___choose_ide\n    glon__cli___print_project_choices --&gt; glon__cli___format_project_age\n    glon__cli___clone_clipboard_project --&gt; glon__cli__parse_git_url\n    glon__cli___clone_clipboard_project --&gt; glon__cli__create_directory_structure\n    glon__cli___clone_clipboard_project --&gt; glon__cli__clone_repository\n    glon__cli___open_from_clipboard --&gt; glon__cli___read_clipboard_text\n    glon__cli___open_from_clipboard --&gt; glon__cli___extract_git_url_from_text\n    glon__cli___open_from_clipboard --&gt; glon__cli___clone_clipboard_project\n    glon__cli___open_from_clipboard --&gt; glon__cli__open_in_ide\n    glon__cli___open_from_clipboard --&gt; glon__cli___parse_ide_option\n    glon__cli___open_recent_project --&gt; glon__cli___print_project_choices\n    glon__cli___open_recent_project --&gt; glon__cli___prompt_for_project\n    glon__cli___open_recent_project --&gt; glon__cli__open_in_ide\n    glon__cli___open_recent_project --&gt; glon__cli__get_all_projects_with_time\n    glon__cli___open_recent_project --&gt; glon__cli___parse_ide_option\n    glon__cli___select_matching_project --&gt; glon__cli___print_project_choices\n    glon__cli___handle_open --&gt; glon__cli__get_all_projects\n    glon__cli___handle_open --&gt; glon__cli__get_all_projects_with_time\n    glon__cli___handle_open --&gt; glon__cli___select_matching_project\n    glon__cli___handle_open --&gt; glon__cli__open_in_ide\n    glon__cli___handle_list --&gt; glon__cli__list_projects\n    glon__cli___handle_grab --&gt; glon__cli__grab_from_clipboard\n    glon__cli___handle_clone --&gt; glon__cli__parse_git_url\n    glon__cli___handle_clone --&gt; glon__cli__create_directory_structure\n    glon__cli___handle_clone --&gt; glon__cli__clone_repository\n    glon__cli___handle_clone --&gt; glon__cli___clipboard_url_candidate\n    glon__cli__main --&gt; glon__cli___handle_clone\n    glon__cli__main --&gt; glon__cli___handle_open\n    glon__cli__main --&gt; glon__cli___handle_list\n    glon__cli__main --&gt; glon__cli___handle_grab\n", "is_subdir": false}, {"name": "compact_flow.mmd", "rel_path": "compact_flow.mmd", "path": "compact_flow.mmd", "size": "157B", "icon": "📈", "type": "mermaid", "type_name": "Mermaid", "content": "flowchart TD\n%% generated in 0.00s\n    glon__cli[&quot;glon.cli&lt;br/&gt;36 funcs&quot;]\n    glon__core[&quot;glon.core&lt;br/&gt;19 funcs&quot;]\n    glon__utils[&quot;glon.utils&lt;br/&gt;9 funcs&quot;]\n", "is_subdir": false}, {"name": "flow.mmd", "rel_path": "flow.mmd", "path": "flow.mmd", "size": "2.3KB", "icon": "📈", "type": "mermaid", "type_name": "Mermaid", "content": "flowchart TD\n%% generated in 0.00s\n\n    %% Entry points (blue)\n    classDef entry fill:#4dabf7,stroke:#1971c2,color:#fff\n\n    subgraph CLI\n        glon__cli___expand_base_path[&quot;_expand_base_path&quot;]\n        glon__cli__get_all_projects[&quot;get_all_projects&quot;]\n        glon__cli__get_all_projects_with_time[&quot;get_all_projects_with_time&quot;]\n        glon__cli___read_clipboard_text[&quot;_read_clipboard_text&quot;]\n        glon__cli___extract_git_url_from_text[&quot;_extract_git_url_from_text&quot;]\n        glon__cli___clipboard_url_candidate[&quot;_clipboard_url_candidate&quot;]\n        glon__cli__parse_git_url[&quot;parse_git_url&quot;]\n        glon__cli__create_directory_structure[&quot;create_directory_structure&quot;]\n        glon__cli__clone_repository[&quot;clone_repository&quot;]\n        glon__cli__grab_from_clipboard[&quot;grab_from_clipboard&quot;]\n        glon__cli___grab_git_url[&quot;_grab_git_url&quot;]\n        glon__cli___copy_or_link[&quot;_copy_or_link&quot;]\n        glon__cli___grab_local_path[&quot;_grab_local_path&quot;]\n        glon__cli__parse_time_filter[&quot;parse_time_filter&quot;]\n        glon__cli__list_projects[&quot;list_projects&quot;]\n        ...[&quot;+21 more&quot;]\n    end\n\n    subgraph Core\n        glon__utils__cleanup_temp_files[&quot;cleanup_temp_files&quot;]\n        glon__utils__monitor_memory_usage[&quot;monitor_memory_usage&quot;]\n        glon__utils__force_garbage_collection[&quot;force_garbage_collection&quot;]\n        glon__utils__find_object_cycles[&quot;find_object_cycles&quot;]\n        glon__utils__get_object_size[&quot;get_object_size&quot;]\n        glon__utils__analyze_memory_usage[&quot;analyze_memory_usage&quot;]\n        glon__utils__set_debug_gc[&quot;set_debug_gc&quot;]\n        glon__utils__clear_gc_debug[&quot;clear_gc_debug&quot;]\n        glon__utils__create_memory_logger[&quot;create_memory_logger&quot;]\n        glon__core__GarbageCollector__enable[&quot;enable&quot;]\n        glon__core__GarbageCollector__disable[&quot;disable&quot;]\n        glon__core__GarbageCollector__collect[&quot;collect&quot;]\n        glon__core__GarbageCollector__get_stats[&quot;get_stats&quot;]\n        glon__core__GarbageCollector__get_count[&quot;get_count&quot;]\n        glon__core__GarbageCollector__set_threshold[&quot;set_threshold&quot;]\n        ...[&quot;+11 more&quot;]\n    end\n\n    class glon__cli___expand_base_path,glon__cli__get_all_projects,glon__cli__get_all_projects_with_time,glon__cli___read_clipboard_text,glon__cli___extract_git_url_from_text,glon__cli___clipboard_url_candidate,glon__cli__parse_git_url,glon__cli__create_directory_structure,glon__cli__clone_repository,glon__cli__grab_from_clipboard entry\n", "is_subdir": false}, {"name": "prompt.txt", "rel_path": "prompt.txt", "path": "prompt.txt", "size": "3.3KB", "icon": "📄", "type": "text", "type_name": "Text", "content": "You are an AI assistant helping me understand and improve a codebase.\n# generated in 0.00s\nUse the attached/generated files as the authoritative context.\nYour goal is to refactor the project based on these files, not just summarize it.\n\nwe are in project path: glon\n\nFiles for analysis:\n\nNote: project/validation.toon.yaml and project/duplication.toon.yaml are generated by external tools (vallm and redup)\n- analysis.toon  (Health diagnostics - complexity metrics, god modules, coupling issues, refactoring priorities) [3KB]\n- map.toon.yaml  (Structural map - files, sizes, imports, exports, signatures, project header) [4KB]\n- evolution.toon.yaml  (Refactoring queue - ranked actions by impact/effort, risks, metrics targets, history) [1KB]\n- project.toon.yaml  (Compact project overview - generated from project.yaml data) [1KB]\n- context.md  (LLM narrative - architecture summary and project context) [10KB]\n- README.md  (Generated documentation - overview and usage guide) [9KB]\n\nOptional files:\n\n- project.toon  (Project logic - compact module view from code2logic) [4KB]\n\nTask:\n- Treat this prompt as a refactoring brief: identify the highest-priority changes and prepare concrete edits.\n- Use the file set to decide whether the first pass should focus on correctness, duplication, complexity reduction, or architecture cleanup.\n- If you can safely implement the refactor, do it; otherwise give an exact file-by-file change plan and test plan.\n- Use analysis.toon to locate high-CC functions and god modules that should be split first.\n- Keep module boundaries intact and update imports/exports according to map.toon.yaml.\n- Use evolution.toon.yaml as the execution backlog and work from the top-ranked items.\n- Keep project.toon.yaml aligned with the refactored architecture.\n- Use project.toon only as a legacy cross-check when needed.\n\nPriority Order:\nP1 — Split or simplify the highest-CC / god modules identified in analysis.toon.\nP1 — Preserve module boundaries and update imports/exports according to map.toon.yaml.\nP2 — Keep the compact project overview in project.toon.yaml aligned with the refactor.\nP2 — Execute the highest-impact items from evolution.toon.yaml in order of benefit/risk.\nP3 — Use project.toon only as a legacy cross-check.\n\nFocus Areas for Analysis:\n1. **Code Health Analysis** - Review complexity metrics, god modules, coupling issues from analysis.toon\n2. **Structural Map** - Use map.toon.yaml to inspect imports, exports, signatures, and the project header\n3. **Refactoring Priorities** - Examine ranked refactoring actions and risk assessment from evolution.toon.yaml\n4. **Project Overview** - Review the compact project overview from project.toon.yaml\n5. **Project Logic** - Review the compact module overview from project.toon\n\nAnalysis Strategy:\n- Start with analysis.toon for health metrics, then map.toon.yaml for structure and signatures\n- Review evolution.toon.yaml for action priorities and next steps\n- Compare the compact project overview in project.toon.yaml with the main analysis files\n- Compare the compact project overview in project.toon with the main analysis files\n\nConstraints:\n- Prefer minimal, incremental changes.\n- Maintain full backward compatibility.\n- Base recommendations on concrete metrics from the provided files.\n- If uncertain, ask clarifying questions.\n", "is_subdir": false}, {"name": "analysis.toon", "rel_path": "analysis.toon", "path": "analysis.toon", "size": "3.7KB", "icon": "📊", "type": "toon", "type_name": "TOON", "content": "# code2llm | 4f 1555L | py:4 | 2026-03-05\n# CC̄=5.7 | critical:4/41 | dups:0 | cycles:0\n\nHEALTH[4]:\n  🟡 CC    grab_from_clipboard CC=20 (limit:15)\n  🟡 CC    list_projects CC=23 (limit:15)\n  🟡 CC    open_in_ide CC=15 (limit:15)\n  🟡 CC    main CC=79 (limit:15)\n\nREFACTOR[1]:\n  1. split 4 high-CC methods  (CC&gt;15)\n\nCOUPLING: no cross-package imports detected\n\nLAYERS:\n  glon/                           CC̄=5.7    ←in:0  →out:0\n  │ !! cli                       1055L  0C   13m  CC=79     ←0\n  │ utils                      262L  0C    9m  CC=7      ←0\n  │ core                       218L  2C   19m  CC=4      ←0\n  │ __init__                    20L  0C    0m  CC=0.0    ←0\n  │\n\nDUPLICATES[0]: none\n\nFUNCTIONS (CC≥10, 4 of 41):\n   79.0  main                                       75n  12exit  loops+cond+ret  !! split\n   23.0  list_projects                              34n   4exit  loops+cond+ret  !! split\n   20.0  grab_from_clipboard                        40n   9exit  cond+ret  !! split\n   15.0  open_in_ide                                19n   5exit  loops+cond+ret  !! split\n\n  summary:\n    critical(≥10): 4 | high(5-10): 6 | medium(2-5): 13 | low(&lt;2): 18\n    10% CC≥10  24% CC≥5\n\nHOTSPOTS:\n  #1  main                                 fan=41   &quot;calls 41 functions&quot;\n  #2  list_projects                        fan=19   &quot;calls 19 functions&quot;\n  #3  open_in_ide                          fan=19   &quot;calls 19 functions&quot;\n  #4  grab_from_clipboard                  fan=18   &quot;calls 18 functions&quot;\n  #5  analyze_memory_usage                 fan=16   &quot;analysis pipeline, 16 stages&quot;\n  #6  monitor_memory_usage                 fan=11   &quot;calls 11 functions&quot;\n  #7  get_all_projects_with_time           fan=11   &quot;calls 11 functions&quot;\n  #8  find_object_cycles                   fan=10   &quot;calls 10 functions&quot;\n  #9  MemoryProfiler.take_snapshot         fan=8    &quot;MemoryProfiler method, fan-out=8&quot;\n  #10 _extract_git_url_from_text           fan=8    &quot;calls 8 functions&quot;\n\nCLASSES:\n  GarbageCollector               ████████████████████████  12m  CC̄=1.0   max=1   \n  MemoryProfiler                 ██████████████             7m  CC̄=2.0   max=4   \n\nD:\n  glon/cli.py:\n    e: get_all_projects,get_all_projects_with_time,_read_clipboard_text,_extract_git_url_from_text,_clipboard_url_candidate,parse_git_url,create_directory_structure,clone_repository,grab_from_clipboard,parse_time_filter,list_projects,open_in_ide,main\n    get_all_projects(base_path)\n    get_all_projects_with_time(base_path)\n    _read_clipboard_text()\n    _extract_git_url_from_text(text)\n    _clipboard_url_candidate(max_len)\n    parse_git_url(url)\n    create_directory_structure(owner,repo,base_path)\n    clone_repository(url,target_dir)\n    grab_from_clipboard(base_path,dry_run,verbose)\n    parse_time_filter(filter_str)\n    list_projects(base_path,time_filter,verbose,limit)\n    open_in_ide(project_path,ide)\n    main()\n  glon/utils.py:\n    e: cleanup_temp_files,monitor_memory_usage,force_garbage_collection,find_object_cycles,get_object_size,analyze_memory_usage,set_debug_gc,clear_gc_debug,create_memory_logger\n    cleanup_temp_files(pattern)\n    monitor_memory_usage(duration,interval)\n    force_garbage_collection(verbose)\n    find_object_cycles(obj,max_depth)\n    get_object_size(obj)\n    analyze_memory_usage()\n    set_debug_gc(flags)\n    clear_gc_debug()\n    create_memory_logger(log_file)\n  glon/core.py:\n    e: GarbageCollector,MemoryProfiler\n    GarbageCollector  # Enhanced garbage collector with monitoring and control featu...\n      __init__(0)  CC=1.0\n    MemoryProfiler  # Memory profiling and monitoring utilities....\n      __init__(0)  CC=1.0\n  glon/__init__.py:\n", "is_subdir": false}, {"name": "evolution.toon", "rel_path": "evolution.toon", "path": "evolution.toon", "size": "903B", "icon": "📊", "type": "toon", "type_name": "TOON", "content": "# code2llm/evolution | 41 func | 3f | 2026-03-05\n\nNEXT[5] (ranked by impact):\n  [1] !! SPLIT           glon/cli.py\n      WHY: 1055L, 0 classes, max CC=79\n      EFFORT: ~4h  IMPACT: 83345\n\n  [2] !! SPLIT-FUNC      main  CC=79  fan=41\n      WHY: CC=79 exceeds 15\n      EFFORT: ~1h  IMPACT: 3239\n\n  [3] !  SPLIT-FUNC      list_projects  CC=23  fan=19\n      WHY: CC=23 exceeds 15\n      EFFORT: ~1h  IMPACT: 437\n\n  [4] !  SPLIT-FUNC      grab_from_clipboard  CC=20  fan=18\n      WHY: CC=20 exceeds 15\n      EFFORT: ~1h  IMPACT: 360\n\n  [5] !  SPLIT-FUNC      open_in_ide  CC=15  fan=19\n      WHY: CC=15 exceeds 15\n      EFFORT: ~1h  IMPACT: 285\n\n\nRISKS[1]:\n  ⚠ Splitting glon/cli.py may break 13 import paths\n\nMETRICS-TARGET:\n  CC̄:          5.7 → ≤4.0\n  max-CC:      79 → ≤20\n  god-modules: 1 → 0\n  high-CC(≥15): 4 → ≤2\n  hub-types:   0 → ≤0\n\nHISTORY:\n  prev CC̄=5.7 → now CC̄=5.7\n", "is_subdir": false}, {"name": "flow.toon", "rel_path": "flow.toon", "path": "flow.toon", "size": "4.7KB", "icon": "📊", "type": "toon", "type_name": "TOON", "content": "# glon/flow | 41 func | 3 pipelines | 1 hub-types | 2026-03-05\n\nPIPELINES[3] (Core:1, Unknown:2):\n  Glon [Core]: int → List[Any]\n              → collect(generation:int) → int           CC=1    pure ▶\n              → _record_stats() → None                  CC=1    mutation\n              → get_objects() → List[Any]               CC=1    pure ■\n              PURITY: 2/3 pure  BOTTLENECK: collect(CC=1)\n\n  Glon [Unknown]: ? → Optional[tuple]\n              → main()                                  CC=79   IO  !! ▶\n              → _extract_git_url_from_text(text:str) → Optional[str] CC=6    pure\n              → parse_git_url(url:str) → Optional[tuple] CC=4    pure ■\n              PURITY: 2/3 pure  BOTTLENECK: main(CC=79)\n\n  Glon [Unknown]: ? → List[dict]\n              → main()                                  CC=79   IO  !! ▶\n              → get_all_projects(base_path:Optional[str]) → List[str] CC=2    pure\n              → get_all_projects_with_time(base_path:Optional[str]) → List[dict] CC=8    mutation ■\n              PURITY: 1/3 pure  BOTTLENECK: main(CC=79)\n\n\nTRANSFORMS (fan-out ≥10):\n  main()                                                  fan=41   !! script-in-disguise\n  list_projects(base_path:Optional[str], time_filter:Optional[str], verbose:bool, limit:Optional[int]) → bool fan=19   fan=19\n  open_in_ide(project_path:str, ide:Optional[str]) → bool fan=19   fan=19\n  grab_from_clipboard(base_path:Optional[str], dry_run:bool, verbose:bool) → bool fan=18   fan=18\n  analyze_memory_usage() → Dict[str, Any]                 fan=16   fan=16\n  monitor_memory_usage(duration:int, interval:float) → List[Dict[str, Any]] fan=11   fan=11\n  get_all_projects_with_time(base_path:Optional[str]) → List[dict] fan=11   fan=11\n  find_object_cycles(obj:Any, max_depth:int) → List[List[Any]] fan=10   fan=10\n\nCONTRACTS:\n  Pipeline: Glon\n    collect(generation:int) → int\n      IN:  generation:int\n      OUT: int\n\n    _record_stats() → None\n      IN:  ()\n      OUT: None\n      SIDE-EFFECT: pure\n\n    get_objects() → List[Any]\n      IN:  ()\n      OUT: List[Any]\n\n  Pipeline: Glon\n    main()\n      IN:  ()\n      OUT: None\n      SIDE-EFFECT: IO(print, print, print)\n      SMELL: CC=79 → split\n\n    _extract_git_url_from_text(text:str) → Optional[str]\n      IN:  text:str\n      OUT: Optional[str]\n\n    parse_git_url(url:str) → Optional[tuple]\n      IN:  url:str\n      OUT: Optional[tuple]\n\n  Pipeline: Glon\n    main()\n      IN:  ()\n      OUT: None\n      SIDE-EFFECT: IO(print, print, print)\n      SMELL: CC=79 → split\n\n    get_all_projects(base_path:Optional[str]) → List[str]\n      IN:  base_path:Optional[str]\n      OUT: List[str]\n\n    get_all_projects_with_time(base_path:Optional[str]) → List[dict]\n      IN:  base_path:Optional[str]\n      OUT: List[dict]\n      SIDE-EFFECT: pure\n\n\nDATA_TYPES (by cross-function usage) [38 annotated, 0 inferred / 41 functions]:\n  str                  consumed:18  produced:5    !! HUB-TYPE → split interface\n  int                  consumed:8   produced:3  \n  bool                 consumed:4   produced:4  \n  str, Any             consumed:0   produced:6    output-heavy\n  tuple                consumed:1   produced:2    narrow scope\n  str, int             consumed:0   produced:2    narrow scope\n  Path                 consumed:1   produced:1    narrow scope\n  logging.Logger       consumed:0   produced:1    narrow scope\n  float                consumed:1   produced:0    narrow scope\n  List[Any]            consumed:0   produced:1    narrow scope\n  dict                 consumed:0   produced:1    narrow scope\n  datetime             consumed:0   produced:1    narrow scope\n\n  HUB TYPES (consumed ≥10):\n    str → 18 consumers → split into:\n      - (analyze consumers to suggest sub-interfaces)\n\nSIDE_EFFECTS:\n  IO:        cleanup_temp_files, force_garbage_collection, find_object_cycles, create_directory_structure, clone_repository, grab_from_clipboard, list_projects, open_in_ide, main\n  Mutation:  GarbageCollector.__init__, GarbageCollector.enable, GarbageCollector.disable, GarbageCollector._record_stats, MemoryProfiler.__init__, MemoryProfiler.take_snapshot, MemoryProfiler.clear_snapshots, MemoryProfiler.clear_tracking, monitor_memory_usage, get_all_projects_with_time\n  Pure:      GarbageCollector.collect, GarbageCollector.get_stats, GarbageCollector.get_count, GarbageCollector.set_threshold, GarbageCollector.get_objects, GarbageCollector.get_referrers, GarbageCollector.get_referents, GarbageCollector.get_memory_summary, MemoryProfiler.track_object, MemoryProfiler.get_tracked_objects\n\n  PIPELINE PURITY:\n    Glon            ██░░ 66% pure\n    Glon            ██░░ 66% pure\n    Glon            █░░░ 33% pure\n", "is_subdir": false}, {"name": "map.toon", "rel_path": "map.toon", "path": "map.toon", "size": "1.9KB", "icon": "📊", "type": "toon", "type_name": "TOON", "content": "# glon | 4f 1555L | python:4\n# Keys: M=modules, D=details, i=imports, c=classes, f=functions, m=methods\nM[4]:\n  glon/__init__.py,20\n  glon/cli.py,1055\n  glon/core.py,218\n  glon/utils.py,262\nD:\n  glon/cli.py:\n    e: get_all_projects,get_all_projects_with_time,_read_clipboard_text,_extract_git_url_from_text,_clipboard_url_candidate,parse_git_url,create_directory_structure,clone_repository,grab_from_clipboard,parse_time_filter,list_projects,open_in_ide,main\n    get_all_projects(base_path)\n    get_all_projects_with_time(base_path)\n    _read_clipboard_text()\n    _extract_git_url_from_text(text)\n    _clipboard_url_candidate(max_len)\n    parse_git_url(url)\n    create_directory_structure(owner;repo;base_path)\n    clone_repository(url;target_dir)\n    grab_from_clipboard(base_path;dry_run;verbose)\n    parse_time_filter(filter_str)\n    list_projects(base_path;time_filter;verbose;limit)\n    open_in_ide(project_path;ide)\n    main()\n  glon/utils.py:\n    e: cleanup_temp_files,monitor_memory_usage,force_garbage_collection,find_object_cycles,get_object_size,analyze_memory_usage,set_debug_gc,clear_gc_debug,create_memory_logger\n    cleanup_temp_files(pattern)\n    monitor_memory_usage(duration;interval)\n    force_garbage_collection(verbose)\n    find_object_cycles(obj;max_depth)\n    get_object_size(obj)\n    analyze_memory_usage()\n    set_debug_gc(flags)\n    clear_gc_debug()\n    create_memory_logger(log_file)\n  glon/core.py:\n    e: GarbageCollector,MemoryProfiler\n    GarbageCollector: __init__(0),enable(0),disable(0),collect(1),get_stats(0),get_count(0),set_threshold(1),get_objects(0),get_referrers(1),get_referents(1),_record_stats(0),get_memory_summary(0)  # Enhanced garbage collector with monitoring and control featu...\n    MemoryProfiler: __init__(0),take_snapshot(1),track_object(2),get_tracked_objects(0),compare_snapshots(2),clear_snapshots(0),clear_tracking(0)  # Memory profiling and monitoring utilities...\n  glon/__init__.py:\n", "is_subdir": false}, {"name": "project.toon", "rel_path": "project.toon", "path": "project.toon", "size": "4.7KB", "icon": "📊", "type": "toon", "type_name": "TOON", "content": "# glon | 8f 2338L | python:8\n# Keys: M=modules, D=details, i=imports, c=classes, f=functions, m=methods\nM[8]:\n  glon/__init__.py,16\n  glon/cli.py,779\n  glon/core.py,179\n  glon/utils.py,197\n  tests/__init__.py,3\n  tests/test_cli.py,247\n  tests/test_core.py,143\n  tests/test_utils.py,163\nD:\n  glon/cli.py:\n    i: os,sys,subprocess,argparse,re,datetime,datetime.timedelta,pathlib.Path,typing.{List,Optional}\n    e: get_all_projects,get_all_projects_with_time,parse_git_url,create_directory_structure,clone_repository,grab_from_clipboard,parse_time_filter,list_projects\n    get_all_projects(base_path:Optional[str]=None)-&gt;List[str]\n    get_all_projects_with_time(base_path:Optional[str]=None)-&gt;List[dict]\n    _read_clipboard_text()-&gt;Optional[str]\n    _extract_git_url_from_text(text:str)-&gt;Optional[str]\n    _clipboard_url_candidate(max_len:int=200)-&gt;Optional[str]\n    parse_git_url(url:str)-&gt;Optional[tuple]\n    create_directory_structure(owner:str;repo:str;base_path:Optional[str]=None)-&gt;Path\n    clone_repository(url:str;target_dir:Path)-&gt;bool\n  glon/core.py:\n    i: gc,sys,time,weakref,typing.{Any,Dict,List,Optional}\n    e: GarbageCollector,MemoryProfiler\n    GarbageCollector: __init__(0),enable(0),disable(0),collect(1),get_stats(0)  # Enhanced garbage collector with monit...\n    MemoryProfiler: __init__(0),take_snapshot(1),track_object(2),get_tracked_objects(0),compare_snapshots(2)  # Memory profiling and monitoring utili...\n  glon/utils.py:\n    i: gc,os,tempfile,shutil,time,sys,typing.{Any,Dict,List,Optional}\n    e: cleanup_temp_files,monitor_memory_usage,force_garbage_collection,find_object_cycles,get_object_size,analyze_memory_usage,set_debug_gc,clear_gc_debug\n    cleanup_temp_files(pattern:str='*')-&gt;int\n    monitor_memory_usage(duration:int=60;interval:float=1.0)-&gt;List[Dict[str,Any]]\n    force_garbage_collection(verbose:bool=False)-&gt;Dict[str,int]\n    find_object_cycles(obj:Any;max_depth:int=10)-&gt;List[List[Any]]\n    get_object_size(obj:Any)-&gt;int\n    analyze_memory_usage()-&gt;Dict[str,Any]\n    set_debug_gc(flags:int=gc.DEBUG_STATS)-&gt;None\n    clear_gc_debug()-&gt;None\n  tests/test_cli.py:\n    i: pytest,subprocess,tempfile,os,glon.cli.{clone_repository,create_directory_structure,parse_git_url},pathlib.Path,unittest.mock.{MagicMock,patch}\n    e: TestParseGitUrl,TestCreateDirectoryStructure,TestCloneRepository,TestGrabFromClipboard,TestCLIIntegration\n    TestParseGitUrl: test_parse_ssh_url(0),test_parse_https_url_with_git(0),test_parse_https_url_without_git(0),test_parse_invalid_url(0),test_parse_different_domain_ssh(0)  # Test cases for URL parsing function.\n    TestCreateDirectoryStructure: test_create_directory_default_path(0),test_create_directory_custom_path(0),test_create_directory_existing(0)  # Test cases for directory structure cr...\n    TestCloneRepository: test_clone_success(1),test_clone_git_error(1),test_clone_git_not_found(1),test_clone_non_empty_directory(0)  # Test cases for repository cloning.\n    TestGrabFromClipboard: test_grab_git_url_from_clipboard(2),test_grab_empty_clipboard(1),test_grab_whitespace_clipboard(1),test_grab_invalid_path(1),test_grab_dry_run(2)  # Test cases for grab from clipboard fu...\n    TestCLIIntegration: test_main_successful_clone(3),test_main_invalid_url(1),test_main_clone_failure(3),test_main_dry_run(3)  # Integration tests for CLI functionality.\n  tests/test_core.py:\n    i: pytest,gc,time,glon.core.{GarbageCollector,MemoryProfiler}\n    e: TestGarbageCollector,TestMemoryProfiler\n    TestGarbageCollector: setup_method(0),test_initialization(0),test_enable_disable(0),test_collect(0),test_get_stats(0)  # Test cases for GarbageCollector class.\n    TestMemoryProfiler: setup_method(0),test_initialization(0),test_take_snapshot(0),test_track_object(0),test_get_tracked_objects(0)  # Test cases for MemoryProfiler class.\n  tests/test_utils.py:\n    i: pytest,gc,tempfile,os,glon.utils.{cleanup_temp_files,find_object_cycles,force_garbage_collection,monitor_memory_usage},unittest.mock.{MagicMock,patch}\n    e: TestCleanupTempFiles,TestMonitorMemoryUsage,TestForceGarbageCollection,TestFindObjectCycles,TestGetObjectSize,TestAnalyzeMemoryUsage,TestDebugFunctions,TestMemoryLogger\n    TestCleanupTempFiles: test_cleanup_temp_files(0),test_cleanup_temp_files_pattern(0)  # Test cases for cleanup_temp_files fun...\n    TestMonitorMemoryUsage: test_monitor_memory_usage(1)  # Test cases for monitor_memory_usage f...\n    TestForceGarbageCollection: test_force_garbage_collection(0),test_force_garbage_collection_verbose(0)  # Test cases for force_garbage_collecti...\n    TestFindObjectCycles: test_find_object_cycles_no_cycle(0),test_find_object_cycles_with_cycle(0)  # Test cases for find_object_cycles fun...\n    TestGetObjectSize: test_get_object_size(0),test_get_object_size_empty(0)  # Test cases for get_object_size function.", "is_subdir": false}, {"name": "mermaid.export", "rel_path": "mermaid.export", "path": "mermaid.export", "size": "8.0KB", "icon": "📄", "type": "unknown", "type_name": "EXPORT", "content": "[Binary file]", "is_subdir": false}, {"name": "analysis.toon.yaml", "rel_path": "analysis.toon.yaml", "path": "analysis.toon.yaml", "size": "3.1KB", "icon": "⚙️", "type": "yaml", "type_name": "YAML", "content": "# code2llm | 12f 2146L | python:4,yaml:3,shell:2,txt:1,toml:1 | 2026-08-11\n# generated in 0.00s\n# CC̅=3.7 | critical:0/64 | dups:0 | cycles:0\n\nHEALTH[0]: ok\n\nREFACTOR[0]: none needed\n\nPIPELINES[28]:\n  [1] Src [main]: main → _handle_clone → parse_git_url\n      PURITY: 100% pure\n  [2] Src [cleanup_temp_files]: cleanup_temp_files\n      PURITY: 100% pure\n  [3] Src [monitor_memory_usage]: monitor_memory_usage\n      PURITY: 100% pure\n  [4] Src [force_garbage_collection]: force_garbage_collection\n      PURITY: 100% pure\n  [5] Src [find_object_cycles]: find_object_cycles\n      PURITY: 100% pure\n  [6] Src [get_object_size]: get_object_size\n      PURITY: 100% pure\n  [7] Src [analyze_memory_usage]: analyze_memory_usage\n      PURITY: 100% pure\n  [8] Src [set_debug_gc]: set_debug_gc\n      PURITY: 100% pure\n  [9] Src [clear_gc_debug]: clear_gc_debug\n      PURITY: 100% pure\n  [10] Src [create_memory_logger]: create_memory_logger\n      PURITY: 100% pure\n  [11] Src [__init__]: __init__\n      PURITY: 100% pure\n  [12] Src [enable]: enable\n      PURITY: 100% pure\n  [13] Src [disable]: disable\n      PURITY: 100% pure\n  [14] Src [collect]: collect\n      PURITY: 100% pure\n  [15] Src [get_stats]: get_stats\n      PURITY: 100% pure\n  [16] Src [get_count]: get_count\n      PURITY: 100% pure\n  [17] Src [set_threshold]: set_threshold\n      PURITY: 100% pure\n  [18] Src [get_objects]: get_objects\n      PURITY: 100% pure\n  [19] Src [get_referrers]: get_referrers\n      PURITY: 100% pure\n  [20] Src [get_referents]: get_referents\n      PURITY: 100% pure\n  [21] Src [_record_stats]: _record_stats\n      PURITY: 100% pure\n  [22] Src [get_memory_summary]: get_memory_summary\n      PURITY: 100% pure\n  [23] Src [take_snapshot]: take_snapshot\n      PURITY: 100% pure\n  [24] Src [track_object]: track_object\n      PURITY: 100% pure\n  [25] Src [get_tracked_objects]: get_tracked_objects\n      PURITY: 100% pure\n  [26] Src [compare_snapshots]: compare_snapshots\n      PURITY: 100% pure\n  [27] Src [clear_snapshots]: clear_snapshots\n      PURITY: 100% pure\n  [28] Src [clear_tracking]: clear_tracking\n      PURITY: 100% pure\n\nLAYERS:\n  glon/                           CC̄=3.7    ←in:0  →out:0\n  │ !! cli                        860L  1C   36m  CC=13     ←0\n  │ utils                      202L  0C    9m  CC=7      ←0\n  │ core                       185L  2C   19m  CC=4      ←0\n  │ __init__                    22L  0C    0m  CC=0.0    ←0\n  │\n  ./                              CC̄=0.0    ←in:0  →out:0\n  │ goal.yaml                  428L  0C    0m  CC=0.0    ←0\n  │ prefact.yaml               122L  0C    0m  CC=0.0    ←0\n  │ pyproject.toml             117L  0C    0m  CC=0.0    ←0\n  │ Makefile                   115L  0C    0m  CC=0.0    ←0\n  │ project.sh                  61L  0C    0m  CC=0.0    ←0\n  │ planfile.yaml               19L  0C    0m  CC=0.0    ←0\n  │ local.dev.txt                8L  0C    0m  CC=0.0    ←0\n  │ activate.sh                  7L  0C    0m  CC=0.0    ←0\n  │\n\nCOUPLING: no cross-package imports detected\n\nEXTERNAL:\n  validation: run `vallm batch .` → validation.toon\n  duplication: run `redup scan .` → duplication.toon\n", "is_subdir": false}, {"name": "calls.toon.yaml", "rel_path": "calls.toon.yaml", "path": "calls.toon.yaml", "size": "4.7KB", "icon": "⚙️", "type": "yaml", "type_name": "YAML", "content": "# code2llm call graph | /home/tom/github/tom-sapletta-com/glon\n# generated in 0.01s\n# nodes: 33 | edges: 50 | modules: 1\n# CC̄=3.7\n\nHUBS[20]:\n  glon.cli._handle_open\n    CC=10  in:1  out:21  total:22\n  glon.cli._grab_local_path\n    CC=8  in:1  out:16  total:17\n  glon.cli._handle_clone\n    CC=9  in:1  out:16  total:17\n  glon.cli.open_in_ide\n    CC=7  in:4  out:12  total:16\n  glon.cli._select_matching_project\n    CC=10  in:1  out:15  total:16\n  glon.cli._choose_ide\n    CC=6  in:1  out:15  total:16\n  glon.cli.get_all_projects_with_time\n    CC=7  in:4  out:10  total:14\n  glon.cli._resolve_project_path\n    CC=6  in:1  out:13  total:14\n  glon.cli._clone_clipboard_project\n    CC=5  in:1  out:12  total:13\n  glon.cli._open_recent_project\n    CC=3  in:1  out:12  total:13\n  glon.cli.clone_repository\n    CC=4  in:3  out:9  total:12\n  glon.cli.list_projects\n    CC=8  in:1  out:10  total:11\n  glon.cli._handle_list\n    CC=3  in:1  out:9  total:10\n  glon.cli.parse_time_filter\n    CC=8  in:1  out:9  total:10\n  glon.cli._read_clipboard_text\n    CC=7  in:3  out:7  total:10\n  glon.cli.grab_from_clipboard\n    CC=5  in:1  out:8  total:9\n  glon.cli._print_project\n    CC=4  in:1  out:8  total:9\n  glon.cli.parse_git_url\n    CC=3  in:5  out:3  total:8\n  glon.cli._prompt_for_project\n    CC=9  in:2  out:6  total:8\n  glon.cli._parse_ide_option\n    CC=1  in:3  out:5  total:8\n\nMODULES:\n  glon.cli  [33 funcs]\n    _choose_ide  CC=6  out:15\n    _clipboard_url_candidate  CC=7  out:5\n    _clone_clipboard_project  CC=5  out:12\n    _expand_base_path  CC=2  out:2\n    _extract_git_url_from_text  CC=5  out:6\n    _format_project_age  CC=5  out:2\n    _grab_git_url  CC=5  out:6\n    _grab_local_path  CC=8  out:16\n    _handle_clone  CC=9  out:16\n    _handle_grab  CC=1  out:6\n\nEDGES:\n  glon.cli.get_all_projects → glon.cli.get_all_projects_with_time\n  glon.cli.get_all_projects_with_time → glon.cli._expand_base_path\n  glon.cli._extract_git_url_from_text → glon.cli.parse_git_url\n  glon.cli._clipboard_url_candidate → glon.cli._read_clipboard_text\n  glon.cli._clipboard_url_candidate → glon.cli.parse_git_url\n  glon.cli.create_directory_structure → glon.cli._expand_base_path\n  glon.cli.grab_from_clipboard → glon.cli._read_clipboard_text\n  glon.cli.grab_from_clipboard → glon.cli.parse_git_url\n  glon.cli.grab_from_clipboard → glon.cli._grab_local_path\n  glon.cli.grab_from_clipboard → glon.cli._grab_git_url\n  glon.cli._grab_git_url → glon.cli.create_directory_structure\n  glon.cli._grab_git_url → glon.cli.clone_repository\n  glon.cli._grab_local_path → glon.cli._expand_base_path\n  glon.cli.list_projects → glon.cli._expand_base_path\n  glon.cli.list_projects → glon.cli._resolve_filter_date\n  glon.cli.list_projects → glon.cli._print_projects\n  glon.cli.list_projects → glon.cli.get_all_projects_with_time\n  glon.cli._resolve_filter_date → glon.cli.parse_time_filter\n  glon.cli._print_projects → glon.cli._print_project\n  glon.cli.open_in_ide → glon.cli._resolve_project_path\n  glon.cli.open_in_ide → glon.cli._choose_ide\n  glon.cli._print_project_choices → glon.cli._format_project_age\n  glon.cli._clone_clipboard_project → glon.cli.parse_git_url\n  glon.cli._clone_clipboard_project → glon.cli.create_directory_structure\n  glon.cli._clone_clipboard_project → glon.cli.clone_repository\n  glon.cli._open_from_clipboard → glon.cli._read_clipboard_text\n  glon.cli._open_from_clipboard → glon.cli._extract_git_url_from_text\n  glon.cli._open_from_clipboard → glon.cli._clone_clipboard_project\n  glon.cli._open_from_clipboard → glon.cli.open_in_ide\n  glon.cli._open_from_clipboard → glon.cli._parse_ide_option\n  glon.cli._open_recent_project → glon.cli._print_project_choices\n  glon.cli._open_recent_project → glon.cli._prompt_for_project\n  glon.cli._open_recent_project → glon.cli.open_in_ide\n  glon.cli._open_recent_project → glon.cli.get_all_projects_with_time\n  glon.cli._open_recent_project → glon.cli._parse_ide_option\n  glon.cli._select_matching_project → glon.cli._print_project_choices\n  glon.cli._handle_open → glon.cli.get_all_projects\n  glon.cli._handle_open → glon.cli.get_all_projects_with_time\n  glon.cli._handle_open → glon.cli._select_matching_project\n  glon.cli._handle_open → glon.cli.open_in_ide\n  glon.cli._handle_list → glon.cli.list_projects\n  glon.cli._handle_grab → glon.cli.grab_from_clipboard\n  glon.cli._handle_clone → glon.cli.parse_git_url\n  glon.cli._handle_clone → glon.cli.create_directory_structure\n  glon.cli._handle_clone → glon.cli.clone_repository\n  glon.cli._handle_clone → glon.cli._clipboard_url_candidate\n  glon.cli.main → glon.cli._handle_clone\n  glon.cli.main → glon.cli._handle_open\n  glon.cli.main → glon.cli._handle_list\n  glon.cli.main → glon.cli._handle_grab\n", "is_subdir": false}, {"name": "calls.yaml", "rel_path": "calls.yaml", "path": "calls.yaml", "size": "12.0KB", "icon": "⚙️", "type": "yaml", "type_name": "YAML", "content": "project: /home/tom/github/tom-sapletta-com/glon\ngenerated_from: code2llm call graph analysis\nstats:\n  total_nodes: 33\n  total_edges: 50\n  modules_count: 1\nnodes:\n  glon.cli.get_all_projects_with_time:\n    name: get_all_projects_with_time\n    module: glon.cli\n    line: 80\n    cyclomatic_complexity: 7\n    calls_out: 10\n    calls_in: 4\n  glon.cli.main:\n    name: main\n    module: glon.cli\n    line: 838\n    cyclomatic_complexity: 13\n    calls_out: 5\n    calls_in: 0\n  glon.cli.get_all_projects:\n    name: get_all_projects\n    module: glon.cli\n    line: 75\n    cyclomatic_complexity: 2\n    calls_out: 2\n    calls_in: 1\n  glon.cli.open_in_ide:\n    name: open_in_ide\n    module: glon.cli\n    line: 490\n    cyclomatic_complexity: 7\n    calls_out: 12\n    calls_in: 4\n  glon.cli.parse_git_url:\n    name: parse_git_url\n    module: glon.cli\n    line: 179\n    cyclomatic_complexity: 3\n    calls_out: 3\n    calls_in: 5\n  glon.cli._grab_local_path:\n    name: _grab_local_path\n    module: glon.cli\n    line: 290\n    cyclomatic_complexity: 8\n    calls_out: 16\n    calls_in: 1\n  glon.cli._handle_list:\n    name: _handle_list\n    module: glon.cli\n    line: 725\n    cyclomatic_complexity: 3\n    calls_out: 9\n    calls_in: 1\n  glon.cli.list_projects:\n    name: list_projects\n    module: glon.cli\n    line: 349\n    cyclomatic_complexity: 8\n    calls_out: 10\n    calls_in: 1\n  glon.cli._handle_clone:\n    name: _handle_clone\n    module: glon.cli\n    line: 801\n    cyclomatic_complexity: 9\n    calls_out: 16\n    calls_in: 1\n  glon.cli._handle_grab:\n    name: _handle_grab\n    module: glon.cli\n    line: 760\n    cyclomatic_complexity: 1\n    calls_out: 6\n    calls_in: 1\n  glon.cli.grab_from_clipboard:\n    name: grab_from_clipboard\n    module: glon.cli\n    line: 224\n    cyclomatic_complexity: 5\n    calls_out: 8\n    calls_in: 1\n  glon.cli.clone_repository:\n    name: clone_repository\n    module: glon.cli\n    line: 198\n    cyclomatic_complexity: 4\n    calls_out: 9\n    calls_in: 3\n  glon.cli._clipboard_url_candidate:\n    name: _clipboard_url_candidate\n    module: glon.cli\n    line: 159\n    cyclomatic_complexity: 7\n    calls_out: 5\n    calls_in: 1\n  glon.cli._resolve_project_path:\n    name: _resolve_project_path\n    module: glon.cli\n    line: 437\n    cyclomatic_complexity: 6\n    calls_out: 13\n    calls_in: 1\n  glon.cli._format_project_age:\n    name: _format_project_age\n    module: glon.cli\n    line: 526\n    cyclomatic_complexity: 5\n    calls_out: 2\n    calls_in: 1\n  glon.cli._select_matching_project:\n    name: _select_matching_project\n    module: glon.cli\n    line: 641\n    cyclomatic_complexity: 10\n    calls_out: 15\n    calls_in: 1\n  glon.cli._choose_ide:\n    name: _choose_ide\n    module: glon.cli\n    line: 459\n    cyclomatic_complexity: 6\n    calls_out: 15\n    calls_in: 1\n  glon.cli._clone_clipboard_project:\n    name: _clone_clipboard_project\n    module: glon.cli\n    line: 577\n    cyclomatic_complexity: 5\n    calls_out: 12\n    calls_in: 1\n  glon.cli._prompt_for_project:\n    name: _prompt_for_project\n    module: glon.cli\n    line: 548\n    cyclomatic_complexity: 9\n    calls_out: 6\n    calls_in: 2\n  glon.cli._extract_git_url_from_text:\n    name: _extract_git_url_from_text\n    module: glon.cli\n    line: 144\n    cyclomatic_complexity: 5\n    calls_out: 6\n    calls_in: 1\n  glon.cli._grab_git_url:\n    name: _grab_git_url\n    module: glon.cli\n    line: 252\n    cyclomatic_complexity: 5\n    calls_out: 6\n    calls_in: 1\n  glon.cli.create_directory_structure:\n    name: create_directory_structure\n    module: glon.cli\n    line: 188\n    cyclomatic_complexity: 1\n    calls_out: 2\n    calls_in: 3\n  glon.cli.parse_time_filter:\n    name: parse_time_filter\n    module: glon.cli\n    line: 326\n    cyclomatic_complexity: 8\n    calls_out: 9\n    calls_in: 1\n  glon.cli._open_recent_project:\n    name: _open_recent_project\n    module: glon.cli\n    line: 619\n    cyclomatic_complexity: 3\n    calls_out: 12\n    calls_in: 1\n  glon.cli._print_projects:\n    name: _print_projects\n    module: glon.cli\n    line: 418\n    cyclomatic_complexity: 4\n    calls_out: 6\n    calls_in: 1\n  glon.cli._print_project:\n    name: _print_project\n    module: glon.cli\n    line: 399\n    cyclomatic_complexity: 4\n    calls_out: 8\n    calls_in: 1\n  glon.cli._read_clipboard_text:\n    name: _read_clipboard_text\n    module: glon.cli\n    line: 114\n    cyclomatic_complexity: 7\n    calls_out: 7\n    calls_in: 3\n  glon.cli._open_from_clipboard:\n    name: _open_from_clipboard\n    module: glon.cli\n    line: 604\n    cyclomatic_complexity: 4\n    calls_out: 6\n    calls_in: 1\n  glon.cli._parse_ide_option:\n    name: _parse_ide_option\n    module: glon.cli\n    line: 519\n    cyclomatic_complexity: 1\n    calls_out: 5\n    calls_in: 3\n  glon.cli._handle_open:\n    name: _handle_open\n    module: glon.cli\n    line: 697\n    cyclomatic_complexity: 10\n    calls_out: 21\n    calls_in: 1\n  glon.cli._print_project_choices:\n    name: _print_project_choices\n    module: glon.cli\n    line: 541\n    cyclomatic_complexity: 2\n    calls_out: 4\n    calls_in: 2\n  glon.cli._resolve_filter_date:\n    name: _resolve_filter_date\n    module: glon.cli\n    line: 384\n    cyclomatic_complexity: 5\n    calls_out: 5\n    calls_in: 1\n  glon.cli._expand_base_path:\n    name: _expand_base_path\n    module: glon.cli\n    line: 71\n    cyclomatic_complexity: 2\n    calls_out: 2\n    calls_in: 6\nedges:\n- caller: glon.cli.get_all_projects\n  callee: glon.cli.get_all_projects_with_time\n  call_type: resolved\n- caller: glon.cli.get_all_projects_with_time\n  callee: glon.cli._expand_base_path\n  call_type: resolved\n- caller: glon.cli._extract_git_url_from_text\n  callee: glon.cli.parse_git_url\n  call_type: resolved\n- caller: glon.cli._clipboard_url_candidate\n  callee: glon.cli._read_clipboard_text\n  call_type: resolved\n- caller: glon.cli._clipboard_url_candidate\n  callee: glon.cli.parse_git_url\n  call_type: resolved\n- caller: glon.cli.create_directory_structure\n  callee: glon.cli._expand_base_path\n  call_type: resolved\n- caller: glon.cli.grab_from_clipboard\n  callee: glon.cli._read_clipboard_text\n  call_type: resolved\n- caller: glon.cli.grab_from_clipboard\n  callee: glon.cli.parse_git_url\n  call_type: resolved\n- caller: glon.cli.grab_from_clipboard\n  callee: glon.cli._grab_local_path\n  call_type: resolved\n- caller: glon.cli.grab_from_clipboard\n  callee: glon.cli._grab_git_url\n  call_type: resolved\n- caller: glon.cli._grab_git_url\n  callee: glon.cli.create_directory_structure\n  call_type: resolved\n- caller: glon.cli._grab_git_url\n  callee: glon.cli.clone_repository\n  call_type: resolved\n- caller: glon.cli._grab_local_path\n  callee: glon.cli._expand_base_path\n  call_type: resolved\n- caller: glon.cli.list_projects\n  callee: glon.cli._expand_base_path\n  call_type: resolved\n- caller: glon.cli.list_projects\n  callee: glon.cli._resolve_filter_date\n  call_type: resolved\n- caller: glon.cli.list_projects\n  callee: glon.cli._print_projects\n  call_type: resolved\n- caller: glon.cli.list_projects\n  callee: glon.cli.get_all_projects_with_time\n  call_type: resolved\n- caller: glon.cli._resolve_filter_date\n  callee: glon.cli.parse_time_filter\n  call_type: resolved\n- caller: glon.cli._print_projects\n  callee: glon.cli._print_project\n  call_type: resolved\n- caller: glon.cli.open_in_ide\n  callee: glon.cli._resolve_project_path\n  call_type: resolved\n- caller: glon.cli.open_in_ide\n  callee: glon.cli._choose_ide\n  call_type: resolved\n- caller: glon.cli._print_project_choices\n  callee: glon.cli._format_project_age\n  call_type: resolved\n- caller: glon.cli._clone_clipboard_project\n  callee: glon.cli.parse_git_url\n  call_type: resolved\n- caller: glon.cli._clone_clipboard_project\n  callee: glon.cli.create_directory_structure\n  call_type: resolved\n- caller: glon.cli._clone_clipboard_project\n  callee: glon.cli.clone_repository\n  call_type: resolved\n- caller: glon.cli._open_from_clipboard\n  callee: glon.cli._read_clipboard_text\n  call_type: resolved\n- caller: glon.cli._open_from_clipboard\n  callee: glon.cli._extract_git_url_from_text\n  call_type: resolved\n- caller: glon.cli._open_from_clipboard\n  callee: glon.cli._clone_clipboard_project\n  call_type: resolved\n- caller: glon.cli._open_from_clipboard\n  callee: glon.cli.open_in_ide\n  call_type: resolved\n- caller: glon.cli._open_from_clipboard\n  callee: glon.cli._parse_ide_option\n  call_type: resolved\n- caller: glon.cli._open_recent_project\n  callee: glon.cli._print_project_choices\n  call_type: resolved\n- caller: glon.cli._open_recent_project\n  callee: glon.cli._prompt_for_project\n  call_type: resolved\n- caller: glon.cli._open_recent_project\n  callee: glon.cli.open_in_ide\n  call_type: resolved\n- caller: glon.cli._open_recent_project\n  callee: glon.cli.get_all_projects_with_time\n  call_type: resolved\n- caller: glon.cli._open_recent_project\n  callee: glon.cli._parse_ide_option\n  call_type: resolved\n- caller: glon.cli._select_matching_project\n  callee: glon.cli._print_project_choices\n  call_type: resolved\n- caller: glon.cli._handle_open\n  callee: glon.cli.get_all_projects\n  call_type: resolved\n- caller: glon.cli._handle_open\n  callee: glon.cli.get_all_projects_with_time\n  call_type: resolved\n- caller: glon.cli._handle_open\n  callee: glon.cli._select_matching_project\n  call_type: resolved\n- caller: glon.cli._handle_open\n  callee: glon.cli.open_in_ide\n  call_type: resolved\n- caller: glon.cli._handle_list\n  callee: glon.cli.list_projects\n  call_type: resolved\n- caller: glon.cli._handle_grab\n  callee: glon.cli.grab_from_clipboard\n  call_type: resolved\n- caller: glon.cli._handle_clone\n  callee: glon.cli.parse_git_url\n  call_type: resolved\n- caller: glon.cli._handle_clone\n  callee: glon.cli.create_directory_structure\n  call_type: resolved\n- caller: glon.cli._handle_clone\n  callee: glon.cli.clone_repository\n  call_type: resolved\n- caller: glon.cli._handle_clone\n  callee: glon.cli._clipboard_url_candidate\n  call_type: resolved\n- caller: glon.cli.main\n  callee: glon.cli._handle_clone\n  call_type: resolved\n- caller: glon.cli.main\n  callee: glon.cli._handle_open\n  call_type: resolved\n- caller: glon.cli.main\n  callee: glon.cli._handle_list\n  call_type: resolved\n- caller: glon.cli.main\n  callee: glon.cli._handle_grab\n  call_type: resolved\nmodules:\n  glon.cli:\n  - glon.cli._choose_ide\n  - glon.cli._clipboard_url_candidate\n  - glon.cli._clone_clipboard_project\n  - glon.cli._expand_base_path\n  - glon.cli._extract_git_url_from_text\n  - glon.cli._format_project_age\n  - glon.cli._grab_git_url\n  - glon.cli._grab_local_path\n  - glon.cli._handle_clone\n  - glon.cli._handle_grab\n  - glon.cli._handle_list\n  - glon.cli._handle_open\n  - glon.cli._open_from_clipboard\n  - glon.cli._open_recent_project\n  - glon.cli._parse_ide_option\n  - glon.cli._print_project\n  - glon.cli._print_project_choices\n  - glon.cli._print_projects\n  - glon.cli._prompt_for_project\n  - glon.cli._read_clipboard_text\n  - glon.cli._resolve_filter_date\n  - glon.cli._resolve_project_path\n  - glon.cli._select_matching_project\n  - glon.cli.clone_repository\n  - glon.cli.create_directory_structure\n  - glon.cli.get_all_projects\n  - glon.cli.get_all_projects_with_time\n  - glon.cli.grab_from_clipboard\n  - glon.cli.list_projects\n  - glon.cli.main\n  - glon.cli.open_in_ide\n  - glon.cli.parse_git_url\n  - glon.cli.parse_time_filter\nentry_points:\n- glon.cli.main\n- glon.core.GarbageCollector.__init__\n- glon.core.GarbageCollector._record_stats\n- glon.core.GarbageCollector.collect\n- glon.core.GarbageCollector.disable\n- glon.core.GarbageCollector.enable\n- glon.core.GarbageCollector.get_count\n- glon.core.GarbageCollector.get_memory_summary\n- glon.core.GarbageCollector.get_objects\n- glon.core.GarbageCollector.get_referents\n- glon.core.GarbageCollector.get_referrers\n- glon.core.GarbageCollector.get_stats\n- glon.core.GarbageCollector.set_threshold\n- glon.core.MemoryProfiler.__init__\n- glon.core.MemoryProfiler.clear_snapshots\n- glon.core.MemoryProfiler.clear_tracking\n- glon.core.MemoryProfiler.compare_snapshots\n- glon.core.MemoryProfiler.get_tracked_objects\n- glon.core.MemoryProfiler.take_snapshot\n- glon.core.MemoryProfiler.track_object\n- glon.utils.analyze_memory_usage\n- glon.utils.cleanup_temp_files\n- glon.utils.clear_gc_debug\n- glon.utils.create_memory_logger\n- glon.utils.find_object_cycles\n- glon.utils.force_garbage_collection\n- glon.utils.get_object_size\n- glon.utils.monitor_memory_usage\n- glon.utils.set_debug_gc\n", "is_subdir": false}, {"name": "evolution.toon.yaml", "rel_path": "evolution.toon.yaml", "path": "evolution.toon.yaml", "size": "1.5KB", "icon": "⚙️", "type": "yaml", "type_name": "YAML", "content": "# code2llm/evolution | 64 func | 3f | 2026-08-11\n# generated in 0.00s\n\nNEXT[1] (ranked by impact):\n  [1] !! SPLIT           glon/cli.py\n      WHY: 860L, 1 classes, max CC=13\n      EFFORT: ~4h  IMPACT: 11180\n\n\nRISKS[1]:\n  ⚠ Splitting glon/cli.py may break 36 import paths\n\nMETRICS-TARGET:\n  CC̄:          3.7 → ≤2.6\n  max-CC:      13 → ≤6\n  god-modules: 1 → 0\n  high-CC(≥15): 0 → ≤0\n  hub-types:   0 → ≤0\n\nPATTERNS (language parser shared logic):\n  _extract_declarations() in base.py — unified extraction for:\n    - TypeScript: interfaces, types, classes, functions, arrow funcs\n    - PHP: namespaces, traits, classes, functions, includes\n    - Ruby: modules, classes, methods, requires\n    - C++: classes, structs, functions, #includes\n    - C#: classes, interfaces, methods, usings\n    - Java: classes, interfaces, methods, imports\n    - Go: packages, functions, structs\n    - Rust: modules, functions, traits, use statements\n\n  Shared regex patterns per language:\n    - import: language-specific import/require/using patterns\n    - class: class/struct/trait declarations with inheritance\n    - function: function/method signatures with visibility\n    - brace_tracking: for C-family languages ({ })\n    - end_keyword_tracking: for Ruby (module/class/def...end)\n\n  Benefits:\n    - Consistent extraction logic across all languages\n    - Reduced code duplication (~70% reduction in parser LOC)\n    - Easier maintenance: fix once, apply everywhere\n    - Standardized FunctionInfo/ClassInfo models\n\nHISTORY:\n  prev CC̄=4.0 → now CC̄=3.7\n", "is_subdir": false}, {"name": "map.toon.yaml", "rel_path": "map.toon.yaml", "path": "map.toon.yaml", "size": "4.1KB", "icon": "⚙️", "type": "yaml", "type_name": "YAML", "content": "# glon | 12f 2146L | shell:2,yaml:3,txt:1,toml:1,python:4 | 2026-08-11\n# generated in 0.01s\n# producer: code2llm | artifact: map.toon.yaml | schema: 1\n# stats: 64 func | 0 cls | 12 mod | CC̄=3.7 | critical:0 | cycles:0\n# alerts[5]: fan-out _handle_open=18; fan-out analyze_memory_usage=16; fan-out find_object_cycles=12; fan-out _select_matching_project=11; fan-out monitor_memory_usage=11\n# hotspots[5]: _handle_open fan=18; analyze_memory_usage fan=16; find_object_cycles fan=12; _select_matching_project fan=11; monitor_memory_usage fan=11\n# evolution: CC̄ 4.0→3.7 (improved -0.3)\n# Keys: M=modules, D=details, i=imports, e=exports, c=classes, f=functions, m=methods\nM[12]:\n  Makefile,115\n  activate.sh,7\n  glon/__init__.py,22\n  glon/cli.py,860\n  glon/core.py,185\n  glon/utils.py,202\n  goal.yaml,428\n  local.dev.txt,8\n  planfile.yaml,19\n  prefact.yaml,122\n  project.sh,61\n  pyproject.toml,117\nD:\n  glon/cli.py:\n    e: ProjectInfo,_expand_base_path,get_all_projects,get_all_projects_with_time,_read_clipboard_text,_extract_git_url_from_text,_clipboard_url_candidate,parse_git_url,create_directory_structure,clone_repository,grab_from_clipboard,_grab_git_url,_copy_or_link,_grab_local_path,parse_time_filter,list_projects,_resolve_filter_date,_print_project,_print_projects,_resolve_project_path,_choose_ide,open_in_ide,_parse_ide_option,_format_project_age,_print_project_choices,_prompt_for_project,_clone_clipboard_project,_open_from_clipboard,_open_recent_project,_select_matching_project,_build_open_parser,_handle_open,_handle_list,_handle_grab,_build_clone_parser,_handle_clone,main\n    ProjectInfo(TypedDict):  # Filesystem metadata used by project listing and selection...\n    _expand_base_path(base_path)\n    get_all_projects(base_path)\n    get_all_projects_with_time(base_path)\n    _read_clipboard_text()\n    _extract_git_url_from_text(text)\n    _clipboard_url_candidate(max_len)\n    parse_git_url(url)\n    create_directory_structure(owner;repo;base_path)\n    clone_repository(url;target_dir)\n    grab_from_clipboard(base_path;dry_run;verbose)\n    _grab_git_url(url;parsed;base_path;dry_run;verbose)\n    _copy_or_link(source_path;target_dir)\n    _grab_local_path(clipboard_text;base_path;dry_run;verbose)\n    parse_time_filter(filter_str)\n    list_projects(base_path;time_filter;verbose;limit)\n    _resolve_filter_date(time_filter)\n    _print_project(project;verbose)\n    _print_projects(projects;total_count;base_path;time_filter;verbose;limit)\n    _resolve_project_path(project_path)\n    _choose_ide(full_path)\n    open_in_ide(project_path;ide)\n    _parse_ide_option(arguments)\n    _format_project_age(mtime;now)\n    _print_project_choices(projects)\n    _prompt_for_project(projects;prompt;default_to_first)\n    _clone_clipboard_project(git_url;all_projects)\n    _open_from_clipboard(arguments;all_projects)\n    _open_recent_project(arguments)\n    _select_matching_project(project_name;projects)\n    _build_open_parser(projects)\n    _handle_open(arguments)\n    _handle_list(arguments)\n    _handle_grab(arguments)\n    _build_clone_parser()\n    _handle_clone(arguments)\n    main(argv)\n  glon/utils.py:\n    e: cleanup_temp_files,monitor_memory_usage,force_garbage_collection,find_object_cycles,get_object_size,analyze_memory_usage,set_debug_gc,clear_gc_debug,create_memory_logger\n    cleanup_temp_files(pattern)\n    monitor_memory_usage(duration;interval)\n    force_garbage_collection(verbose)\n    find_object_cycles(obj;max_depth)\n    get_object_size(obj)\n    analyze_memory_usage()\n    set_debug_gc(flags)\n    clear_gc_debug()\n    create_memory_logger(log_file)\n  glon/core.py:\n    e: GarbageCollector,MemoryProfiler\n    GarbageCollector: __init__(0),enable(0),disable(0),collect(1),get_stats(0),get_count(0),set_threshold(1),get_objects(0),get_referrers(1),get_referents(1),_record_stats(0),get_memory_summary(0)  # Enhanced garbage collector with monitoring and control featu...\n    MemoryProfiler: __init__(0),take_snapshot(1),track_object(2),get_tracked_objects(0),compare_snapshots(2),clear_snapshots(0),clear_tracking(0)  # Memory profiling and monitoring utilities...\n  activate.sh:\n  goal.yaml:\n  local.dev.txt:\n  planfile.yaml:\n  Makefile:\n  pyproject.toml:\n  prefact.yaml:\n  project.sh:\n  glon/__init__.py:\n", "is_subdir": false}, {"name": "planfile-tickets.yaml", "rel_path": "planfile-tickets.yaml", "path": "planfile-tickets.yaml", "size": "9.2KB", "icon": "⚙️", "type": "yaml", "type_name": "YAML", "content": "source: code2llm\n# generated in 0.01s\nschema: code2llm.planfile_tickets.v1\nproject_root: /home/tom/github/tom-sapletta-com/glon\ntickets:\n- signal: code2llm_smell_shotgun_surgery\n  title: 'Address code smell: Shotgun Surgery: options'\n  description: 'code2llm reports `Shotgun Surgery: options` in `glon/cli.py:760`.\n\n\n    Mutation of variable ''options'' spans 5 functions in /home/tom/github/tom-sapletta-com/glon/glon/cli.py.\n    Changing this logic requires work in many places.\n\n\n    Make the smallest refactor that removes the smell and run local tests.'\n  priority: high\n  labels:\n  - llm-ready\n  - code2llm\n  - code-smell\n  - shotgun-surgery\n  files:\n  - glon/cli.py\n  dedupe_key: 'code2llm:smell:shotgun_surgery:glon/cli.py:760:Shotgun Surgery: options'\n- signal: code2llm_smell_shotgun_surgery\n  title: 'Address code smell: Shotgun Surgery: owner'\n  description: 'code2llm reports `Shotgun Surgery: owner` in `glon/cli.py:577`.\n\n\n    Mutation of variable ''owner'' spans 5 functions in /home/tom/github/tom-sapletta-com/glon/glon/cli.py.\n    Changing this logic requires work in many places.\n\n\n    Make the smallest refactor that removes the smell and run local tests.'\n  priority: high\n  labels:\n  - llm-ready\n  - code2llm\n  - code-smell\n  - shotgun-surgery\n  files:\n  - glon/cli.py\n  dedupe_key: 'code2llm:smell:shotgun_surgery:glon/cli.py:577:Shotgun Surgery: owner'\n- signal: code2llm_smell_shotgun_surgery\n  title: 'Address code smell: Shotgun Surgery: parser'\n  description: 'code2llm reports `Shotgun Surgery: parser` in `glon/cli.py:760`.\n\n\n    Mutation of variable ''parser'' spans 5 functions in /home/tom/github/tom-sapletta-com/glon/glon/cli.py.\n    Changing this logic requires work in many places.\n\n\n    Make the smallest refactor that removes the smell and run local tests.'\n  priority: high\n  labels:\n  - llm-ready\n  - code2llm\n  - code-smell\n  - shotgun-surgery\n  files:\n  - glon/cli.py\n  dedupe_key: 'code2llm:smell:shotgun_surgery:glon/cli.py:760:Shotgun Surgery: parser'\n- signal: code2llm_smell_shotgun_surgery\n  title: 'Address code smell: Shotgun Surgery: repo'\n  description: 'code2llm reports `Shotgun Surgery: repo` in `glon/cli.py:577`.\n\n\n    Mutation of variable ''repo'' spans 5 functions in /home/tom/github/tom-sapletta-com/glon/glon/cli.py.\n    Changing this logic requires work in many places.\n\n\n    Make the smallest refactor that removes the smell and run local tests.'\n  priority: high\n  labels:\n  - llm-ready\n  - code2llm\n  - code-smell\n  - shotgun-surgery\n  files:\n  - glon/cli.py\n  dedupe_key: 'code2llm:smell:shotgun_surgery:glon/cli.py:577:Shotgun Surgery: repo'\n- signal: code2llm_smell_shotgun_surgery\n  title: 'Address code smell: Shotgun Surgery: target_dir'\n  description: 'code2llm reports `Shotgun Surgery: target_dir` in `glon/cli.py:577`.\n\n\n    Mutation of variable ''target_dir'' spans 5 functions in /home/tom/github/tom-sapletta-com/glon/glon/cli.py.\n    Changing this logic requires work in many places.\n\n\n    Make the smallest refactor that removes the smell and run local tests.'\n  priority: high\n  labels:\n  - llm-ready\n  - code2llm\n  - code-smell\n  - shotgun-surgery\n  files:\n  - glon/cli.py\n  dedupe_key: 'code2llm:smell:shotgun_surgery:glon/cli.py:577:Shotgun Surgery: target_dir'\n- signal: code2llm_smell_god_function\n  title: 'Address code smell: God Function: _clone_clipboard_project'\n  description: 'code2llm reports `God Function: _clone_clipboard_project` in `glon/cli.py:577`.\n\n\n    Function ''_clone_clipboard_project'' is oversized: CC=5, fan-out=6, mutations=7.\n\n\n    Make the smallest refactor that removes the smell and run local tests.'\n  priority: normal\n  labels:\n  - llm-ready\n  - code2llm\n  - code-smell\n  - god-function\n  files:\n  - glon/cli.py\n  dedupe_key: 'code2llm:smell:god_function:glon/cli.py:577:God Function: _clone_clipboard_project'\n- signal: code2llm_smell_god_function\n  title: 'Address code smell: God Function: _handle_clone'\n  description: 'code2llm reports `God Function: _handle_clone` in `glon/cli.py:801`.\n\n\n    Function ''_handle_clone'' is oversized: CC=9, fan-out=7, mutations=8.\n\n\n    Make the smallest refactor that removes the smell and run local tests.'\n  priority: normal\n  labels:\n  - llm-ready\n  - code2llm\n  - code-smell\n  - god-function\n  files:\n  - glon/cli.py\n  dedupe_key: 'code2llm:smell:god_function:glon/cli.py:801:God Function: _handle_clone'\n- signal: code2llm_smell_god_function\n  title: 'Address code smell: God Function: _handle_list'\n  description: 'code2llm reports `God Function: _handle_list` in `glon/cli.py:725`.\n\n\n    Function ''_handle_list'' is oversized: CC=3, fan-out=5, mutations=10.\n\n\n    Make the smallest refactor that removes the smell and run local tests.'\n  priority: normal\n  labels:\n  - llm-ready\n  - code2llm\n  - code-smell\n  - god-function\n  files:\n  - glon/cli.py\n  dedupe_key: 'code2llm:smell:god_function:glon/cli.py:725:God Function: _handle_list'\n- signal: code2llm_smell_god_function\n  title: 'Address code smell: God Function: _handle_open'\n  description: 'code2llm reports `God Function: _handle_open` in `glon/cli.py:697`.\n\n\n    Function ''_handle_open'' is oversized: CC=10, fan-out=18, mutations=7.\n\n\n    Make the smallest refactor that removes the smell and run local tests.'\n  priority: normal\n  labels:\n  - llm-ready\n  - code2llm\n  - code-smell\n  - god-function\n  files:\n  - glon/cli.py\n  dedupe_key: 'code2llm:smell:god_function:glon/cli.py:697:God Function: _handle_open'\n- signal: code2llm_smell_god_function\n  title: 'Address code smell: God Function: _resolve_project_path'\n  description: 'code2llm reports `God Function: _resolve_project_path` in `glon/cli.py:437`.\n\n\n    Function ''_resolve_project_path'' is oversized: CC=6, fan-out=10, mutations=8.\n\n\n    Make the smallest refactor that removes the smell and run local tests.'\n  priority: normal\n  labels:\n  - llm-ready\n  - code2llm\n  - code-smell\n  - god-function\n  files:\n  - glon/cli.py\n  dedupe_key: 'code2llm:smell:god_function:glon/cli.py:437:God Function: _resolve_project_path'\n- signal: code2llm_smell_god_function\n  title: 'Address code smell: God Function: _select_matching_project'\n  description: 'code2llm reports `God Function: _select_matching_project` in `glon/cli.py:641`.\n\n\n    Function ''_select_matching_project'' is oversized: CC=10, fan-out=11, mutations=7.\n\n\n    Make the smallest refactor that removes the smell and run local tests.'\n  priority: normal\n  labels:\n  - llm-ready\n  - code2llm\n  - code-smell\n  - god-function\n  files:\n  - glon/cli.py\n  dedupe_key: 'code2llm:smell:god_function:glon/cli.py:641:God Function: _select_matching_project'\n- signal: code2llm_smell_god_function\n  title: 'Address code smell: God Function: analyze_memory_usage'\n  description: 'code2llm reports `God Function: analyze_memory_usage` in `glon/utils.py:141`.\n\n\n    Function ''analyze_memory_usage'' is oversized: CC=3, fan-out=16, mutations=7.\n\n\n    Make the smallest refactor that removes the smell and run local tests.'\n  priority: normal\n  labels:\n  - llm-ready\n  - code2llm\n  - code-smell\n  - god-function\n  files:\n  - glon/utils.py\n  dedupe_key: 'code2llm:smell:god_function:glon/utils.py:141:God Function: analyze_memory_usage'\n- signal: code2llm_smell_god_function\n  title: 'Address code smell: God Function: create_memory_logger'\n  description: 'code2llm reports `God Function: create_memory_logger` in `glon/utils.py:188`.\n\n\n    Function ''create_memory_logger'' is oversized: CC=2, fan-out=7, mutations=7.\n\n\n    Make the smallest refactor that removes the smell and run local tests.'\n  priority: normal\n  labels:\n  - llm-ready\n  - code2llm\n  - code-smell\n  - god-function\n  files:\n  - glon/utils.py\n  dedupe_key: 'code2llm:smell:god_function:glon/utils.py:188:God Function: create_memory_logger'\n- signal: code2llm_smell_god_function\n  title: 'Address code smell: God Function: find_object_cycles'\n  description: 'code2llm reports `God Function: find_object_cycles` in `glon/utils.py:95`.\n\n\n    Function ''find_object_cycles'' is oversized: CC=1, fan-out=12, mutations=0.\n\n\n    Make the smallest refactor that removes the smell and run local tests.'\n  priority: normal\n  labels:\n  - llm-ready\n  - code2llm\n  - code-smell\n  - god-function\n  files:\n  - glon/utils.py\n  dedupe_key: 'code2llm:smell:god_function:glon/utils.py:95:God Function: find_object_cycles'\n- signal: code2llm_smell_god_function\n  title: 'Address code smell: God Function: main'\n  description: 'code2llm reports `God Function: main` in `glon/cli.py:838`.\n\n\n    Function ''main'' is oversized: CC=13, fan-out=5, mutations=2.\n\n\n    Make the smallest refactor that removes the smell and run local tests.'\n  priority: normal\n  labels:\n  - llm-ready\n  - code2llm\n  - code-smell\n  - god-function\n  files:\n  - glon/cli.py\n  dedupe_key: 'code2llm:smell:god_function:glon/cli.py:838:God Function: main'\n- signal: code2llm_smell_god_function\n  title: 'Address code smell: God Function: monitor_memory_usage'\n  description: 'code2llm reports `God Function: monitor_memory_usage` in `glon/utils.py:41`.\n\n\n    Function ''monitor_memory_usage'' is oversized: CC=3, fan-out=11, mutations=6.\n\n\n    Make the smallest refactor that removes the smell and run local tests.'\n  priority: normal\n  labels:\n  - llm-ready\n  - code2llm\n  - code-smell\n  - god-function\n  files:\n  - glon/utils.py\n  dedupe_key: 'code2llm:smell:god_function:glon/utils.py:41:God Function: monitor_memory_usage'\napplied: []\nskipped: []\n", "is_subdir": false}, {"name": "project.toon.yaml", "rel_path": "project.toon.yaml", "path": "project.toon.yaml", "size": "1.9KB", "icon": "⚙️", "type": "yaml", "type_name": "YAML", "content": "# glon | 64 func | 3f | 2146L | python | 2026-08-11\n# generated in 0.00s\n\nHEALTH:\n  CC̄=3.7  critical=3 (limit:10)  dup=0  cycles=0\n\nALERTS[7]:\n  !!  high_fan_out     _handle_open = 18 (limit:10)\n  !!  high_fan_out     analyze_memory_usage = 16 (limit:10)\n  !   high_fan_out     find_object_cycles = 12 (limit:10)\n  !   high_fan_out     _select_matching_project = 11 (limit:10)\n  !   high_fan_out     monitor_memory_usage = 11 (limit:10)\n  !   high_fan_out     get_all_projects_with_time = 10 (limit:10)\n  !   high_fan_out     _resolve_project_path = 10 (limit:10)\n\nMODULES[12] (top by size):\n  M[glon/cli.py] 860L C:1 F:36 CC↑13 D:0 (python)\n  M[goal.yaml] 428L C:0 F:0 CC↑0 D:0 (yaml)\n  M[glon/utils.py] 202L C:0 F:9 CC↑7 D:0 (python)\n  M[glon/core.py] 185L C:2 F:19 CC↑4 D:0 (python)\n  M[prefact.yaml] 122L C:0 F:0 CC↑0 D:0 (yaml)\n  M[pyproject.toml] 117L C:0 F:0 CC↑0 D:0 (toml)\n  M[Makefile] 115L C:0 F:0 CC↑0 D:0 ()\n  M[project.sh] 61L C:0 F:0 CC↑0 D:0 (shell)\n  M[glon/__init__.py] 22L C:0 F:0 CC↑0 D:0 (python)\n  M[planfile.yaml] 19L C:0 F:0 CC↑0 D:0 (yaml)\n  M[local.dev.txt] 8L C:0 F:0 CC↑0 D:0 (txt)\n  M[activate.sh] 7L C:0 F:0 CC↑0 D:0 (shell)\n  LANGS: python:4/yaml:3/shell:2/other:1/txt:1/toml:1\n\nHOTSPOTS[7]:\n  ★ _handle_open fan=18  // Orchestrates 18 calls\n  ★ analyze_memory_usage fan=16  // Analysis pipeline, 16 stages\n  ★ find_object_cycles fan=12  // Find reference cycles reachable from an object within a depth limit.\n  ★ _select_matching_project fan=11  // Orchestrates 11 calls\n  ★ monitor_memory_usage fan=11  // Sample process memory and GC counters for a fixed duration.\n\nREFACTOR[3]:\n  [1] H/H Split god module glon/cli.py (860L, 1 classes)\n  [2] M/M Reduce _handle_open fan-out (currently 18)\n  [3] M/M Reduce analyze_memory_usage fan-out (currently 16)\n\nEVOLUTION:\n  2026-03-05 CC̄=5.7 crit=4 2330L // Automated analysis\n  2026-08-11 CC̄=3.7 crit=3 2146L // Automated analysis\n", "is_subdir": false}, {"name": "project.yaml", "rel_path": "project.yaml", "path": "project.yaml", "size": "5.1KB", "icon": "⚙️", "type": "yaml", "type_name": "YAML", "content": "version: '1'\nproject:\n  name: glon\n  repo: /home/tom/github/tom-sapletta-com/glon\n  language: python\n  analyzed_at: '2026-03-05T12:04:10Z'\n  tool: code2llm\n  stats:\n    files: 3\n    lines: 2330\n    functions: 41\n    classes: 2\nhealth:\n  cc_avg: 5.7\n  critical_count: 4\n  critical_limit: 10\n  duplicates: 0\n  cycles: 0\n  alerts:\n  - type: cc_exceeded\n    target: main\n    value: 79\n    limit: 15\n    severity: critical\n  - type: high_fan_out\n    target: main\n    value: 41\n    limit: 10\n    severity: critical\n  - type: cc_exceeded\n    target: list_projects\n    value: 23\n    limit: 15\n    severity: error\n  - type: cc_exceeded\n    target: grab_from_clipboard\n    value: 20\n    limit: 15\n    severity: error\n  - type: high_fan_out\n    target: list_projects\n    value: 19\n    limit: 10\n    severity: error\n  - type: high_fan_out\n    target: open_in_ide\n    value: 19\n    limit: 10\n    severity: error\n  - type: high_fan_out\n    target: grab_from_clipboard\n    value: 18\n    limit: 10\n    severity: error\n  - type: high_fan_out\n    target: analyze_memory_usage\n    value: 16\n    limit: 10\n    severity: error\n  - type: cc_exceeded\n    target: open_in_ide\n    value: 15\n    limit: 15\n    severity: warning\n  - type: high_fan_out\n    target: monitor_memory_usage\n    value: 11\n    limit: 10\n    severity: warning\n  - type: high_fan_out\n    target: get_all_projects_with_time\n    value: 11\n    limit: 10\n    severity: warning\n  - type: high_fan_out\n    target: find_object_cycles\n    value: 10\n    limit: 10\n    severity: warning\nmodules:\n- path: glon/cli.py\n  lines: 1055\n  classes: 0\n  methods: 13\n  cc_max: 79\n  inbound_deps: 0\n  exports:\n  - name: get_all_projects\n    type: function\n    cc: 2\n  - name: get_all_projects_with_time\n    type: function\n    cc: 8\n    fan_out: 11\n  - name: parse_git_url\n    type: function\n    cc: 4\n  - name: create_directory_structure\n    type: function\n    cc: 2\n  - name: clone_repository\n    type: function\n    cc: 4\n  - name: grab_from_clipboard\n    type: function\n    cc: 20\n    flag: split\n    fan_out: 18\n  - name: parse_time_filter\n    type: function\n    cc: 8\n  - name: list_projects\n    type: function\n    cc: 23\n    flag: split\n    fan_out: 19\n  - name: open_in_ide\n    type: function\n    cc: 15\n    flag: split\n    fan_out: 19\n  - name: main\n    type: function\n    cc: 79\n    flag: split\n    fan_out: 41\n- path: glon/utils.py\n  lines: 262\n  classes: 0\n  methods: 9\n  cc_max: 7\n  inbound_deps: 0\n  exports:\n  - name: cleanup_temp_files\n    type: function\n    cc: 7\n  - name: monitor_memory_usage\n    type: function\n    cc: 3\n    fan_out: 11\n  - name: force_garbage_collection\n    type: function\n    cc: 3\n  - name: find_object_cycles\n    type: function\n    cc: 1\n    fan_out: 10\n  - name: get_object_size\n    type: function\n    cc: 2\n  - name: analyze_memory_usage\n    type: function\n    cc: 3\n    fan_out: 16\n  - name: set_debug_gc\n    type: function\n    cc: 1\n  - name: clear_gc_debug\n    type: function\n    cc: 1\n  - name: create_memory_logger\n    type: function\n    cc: 2\n- path: glon/core.py\n  lines: 218\n  classes: 2\n  methods: 19\n  cc_max: 4\n  inbound_deps: 0\n  exports:\n  - name: GarbageCollector\n    type: class\n    cc_avg: 1.0\n  - name: MemoryProfiler\n    type: class\n    cc_avg: 2.0\n- path: glon/__init__.py\n  lines: 20\n  classes: 0\n  methods: 0\n  cc_max: 0\n  inbound_deps: 0\nhotspots:\n- name: main\n  fan_out: 41\n  note: Main CLI entry point.\n- name: list_projects\n  fan_out: 19\n  note: &quot;List all projects in the base path.\\n\\nArgs:\\n    base_path: Base path to\\\n    \\ search (d&quot;\n- name: open_in_ide\n  fan_out: 19\n  note: &quot;Open a project in an IDE.\\n\\nArgs:\\n    project_path: Path to project (e.g.,\\\n    \\ \\&quot;owner&quot;\n- name: grab_from_clipboard\n  fan_out: 18\n  note: 'Grab path from clipboard and process it.\n\n\n    Reads from clipboard and determines if'\n- name: analyze_memory_usage\n  fan_out: 16\n  note: Analysis pipeline, 16 stages\n- name: monitor_memory_usage\n  fan_out: 11\n  note: &quot;Monitor memory usage over time.\\n\\nArgs:\\n    duration: Monitoring duration\\\n    \\ in seco&quot;\n- name: get_all_projects_with_time\n  fan_out: 11\n  note: &quot;Get all available projects with modification time.\\n\\nArgs:\\n    base_path:\\\n    \\ Base pa&quot;\n- name: find_object_cycles\n  fan_out: 10\n  note: &quot;Find reference cycles involving the given object.\\n\\nArgs:\\n    obj: Object\\\n    \\ to anal&quot;\nrefactoring:\n  priorities:\n  - action: Split main (CC=79 → target CC&lt;10)\n    impact: high\n    effort: low\n    module: cli.py\n  - action: Split god module glon/cli.py (1055L, 0 classes)\n    impact: high\n    effort: high\n  - action: Split grab_from_clipboard (CC=20 → target CC&lt;10)\n    impact: medium\n    effort: low\n    module: cli.py\n  - action: Split list_projects (CC=23 → target CC&lt;10)\n    impact: medium\n    effort: low\n    module: cli.py\n  - action: Split open_in_ide (CC=15 → target CC&lt;10)\n    impact: medium\n    effort: low\n    module: cli.py\n  - action: Reduce main fan-out (currently 41)\n    impact: medium\n    effort: medium\n  - action: Reduce list_projects fan-out (currently 19)\n    impact: medium\n    effort: medium\n  - action: Reduce open_in_ide fan-out (currently 19)\n    impact: medium\n    effort: medium\nevolution:\n- date: '2026-03-05'\n  cc_avg: 5.7\n  critical: 4\n  lines: 2330\n  note: Automated analysis\n", "is_subdir": false}];
+        let currentFile = null;
+
+        function renderFileList(filter = '') {
+            const list = document.getElementById('fileList');
+            const filtered = files.filter(f =>
+                f.name.toLowerCase().includes(filter.toLowerCase()) ||
+                f.path.toLowerCase().includes(filter.toLowerCase())
+            );
+
+            if (filtered.length === 0) {
+                list.innerHTML = '<div class="empty-state">No files found</div>';
+                return;
+            }
+
+            // Group by type
+            const groups = {};
+            for (const file of filtered) {
+                const type = file.type_name;
+                if (!groups[type]) groups[type] = [];
+                groups[type].push(file);
+            }
+
+            let html = '';
+            for (const [typeName, groupFiles] of Object.entries(groups)) {
+                html += `
+                    <div class="file-group">
+                        <div class="file-group-title">${typeName} Files (${groupFiles.length})</div>
+                        ${groupFiles.map(f => `
+                            <div class="file-item ${currentFile?.name === f.name ? 'active' : ''}"
+                                 onclick="selectFile('${f.name}')">
+                                <span class="file-icon">${f.icon}</span>
+                                <div class="file-info">
+                                    <div class="file-name">${f.name}</div>
+                                    <div class="file-meta">${f.path}</div>
+                                </div>
+                                <span class="file-size">${f.size}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            list.innerHTML = html;
+        }
+
+        function selectFile(name) {
+            const file = files.find(f => f.name === name);
+            if (!file) return;
+
+            currentFile = file;
+
+            document.getElementById('contentIcon').textContent = file.icon;
+            document.getElementById('contentTitle').textContent = file.name;
+
+            // Actions
+            const actions = document.getElementById('contentActions');
+            actions.innerHTML = `
+                <a href="${file.rel_path}" download class="btn">⬇ Download</a>
+                <a href="${file.rel_path}" target="_blank" class="btn btn-primary">↗ Open Raw</a>
+            `;
+
+            // Content
+            const body = document.getElementById('contentBody');
+            if (file.type === 'markdown') {
+                // Render markdown as HTML using marked.js
+                body.innerHTML = `<div class="markdown-content">${marked.parse(file.content)}</div>`;
+            } else if (file.type === 'html') {
+                // For HTML files, show in iframe for safety
+                body.innerHTML = `<iframe src="${file.rel_path}" style="width:100%;height:100%;border:none;border-radius:0.5rem;"></iframe>`;  # noqa: E501
+            } else if (file.type === 'image') {
+                // For images, display the actual image
+                body.innerHTML = `<div class="image-preview"><img src="${file.rel_path}" alt="${file.name}" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:0.5rem;"></div>`;  # noqa: E501
+            } else if (file.type === 'mermaid') {
+                // Render mermaid diagram
+                const diagramId = 'mermaid-diagram-' + Date.now();
+                body.innerHTML = `<div class="mermaid-content"><pre class="mermaid" id="${diagramId}">${file.content}</pre></div>`;  # noqa: E501
+                // Initialize mermaid on the new element
+                setTimeout(() => {
+                    mermaid.init(undefined, document.getElementById(diagramId));
+                }, 0);
+            } else if (file.type === 'json') {
+                try {
+                    const json = JSON.parse(file.content.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&'));  # noqa: E501
+                    const formatted = JSON.stringify(json, null, 2);
+                    body.innerHTML = `<pre><code class="language-json">${formatted.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`;  # noqa: E501
+                    hljs.highlightElement(body.querySelector('code'));
+                } catch {
+                    body.innerHTML = `<pre>${file.content}</pre>`;
+                }
+            } else if (file.type === 'yaml') {
+                // YAML with syntax highlighting
+                body.innerHTML = `<pre><code class="language-yaml">${file.content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`;  # noqa: E501
+                hljs.highlightElement(body.querySelector('code'));
+            } else if (file.type === 'toon') {
+                // TOON with simple highlighting (use ini as closest match for key: value format)
+                body.innerHTML = `<pre><code class="language-ini">${file.content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`;  # noqa: E501
+                hljs.highlightElement(body.querySelector('code'));
+            } else if (file.type === 'code') {
+                // Code files with auto-highlighting
+                body.innerHTML = `<pre><code>${file.content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`;  # noqa: E501
+                hljs.highlightElement(body.querySelector('code'));
+            } else {
+                body.innerHTML = `<pre>${file.content}</pre>`;
+            }
+
+            renderFileList(document.getElementById('search').value);
+        }
+
+        function filterFiles(query) {
+            renderFileList(query);
+        }
+
+        function renderStats() {
+            const stats = {};
+            for (const f of files) {
+                stats[f.type_name] = (stats[f.type_name] || 0) + 1;
+            }
+
+            const grid = document.getElementById('statsGrid');
+            grid.innerHTML = Object.entries(stats)
+                .sort((a, b) => b[1] - a[1])
+                .map(([type, count]) => `
+                    <div class="stat-card">
+                        <div class="stat-value">${count}</div>
+                        <div class="stat-label">${type}</div>
+                    </div>
+                `).join('');
+        }
+
+        // Initialize
+        renderStats();
+        renderFileList();
+
+        // Select first file if available
+        if (files.length > 0) {
+            selectFile(files[0].name);
+        }
+    </script>
+</body>
+</html>

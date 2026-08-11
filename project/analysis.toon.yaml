@@ -1,0 +1,89 @@
+# code2llm | 12f 2146L | python:4,yaml:3,shell:2,txt:1,toml:1 | 2026-08-11
+# generated in 0.00s
+# CC̅=3.7 | critical:0/64 | dups:0 | cycles:0
+
+HEALTH[0]: ok
+
+REFACTOR[0]: none needed
+
+PIPELINES[28]:
+  [1] Src [main]: main → _handle_clone → parse_git_url
+      PURITY: 100% pure
+  [2] Src [cleanup_temp_files]: cleanup_temp_files
+      PURITY: 100% pure
+  [3] Src [monitor_memory_usage]: monitor_memory_usage
+      PURITY: 100% pure
+  [4] Src [force_garbage_collection]: force_garbage_collection
+      PURITY: 100% pure
+  [5] Src [find_object_cycles]: find_object_cycles
+      PURITY: 100% pure
+  [6] Src [get_object_size]: get_object_size
+      PURITY: 100% pure
+  [7] Src [analyze_memory_usage]: analyze_memory_usage
+      PURITY: 100% pure
+  [8] Src [set_debug_gc]: set_debug_gc
+      PURITY: 100% pure
+  [9] Src [clear_gc_debug]: clear_gc_debug
+      PURITY: 100% pure
+  [10] Src [create_memory_logger]: create_memory_logger
+      PURITY: 100% pure
+  [11] Src [__init__]: __init__
+      PURITY: 100% pure
+  [12] Src [enable]: enable
+      PURITY: 100% pure
+  [13] Src [disable]: disable
+      PURITY: 100% pure
+  [14] Src [collect]: collect
+      PURITY: 100% pure
+  [15] Src [get_stats]: get_stats
+      PURITY: 100% pure
+  [16] Src [get_count]: get_count
+      PURITY: 100% pure
+  [17] Src [set_threshold]: set_threshold
+      PURITY: 100% pure
+  [18] Src [get_objects]: get_objects
+      PURITY: 100% pure
+  [19] Src [get_referrers]: get_referrers
+      PURITY: 100% pure
+  [20] Src [get_referents]: get_referents
+      PURITY: 100% pure
+  [21] Src [_record_stats]: _record_stats
+      PURITY: 100% pure
+  [22] Src [get_memory_summary]: get_memory_summary
+      PURITY: 100% pure
+  [23] Src [take_snapshot]: take_snapshot
+      PURITY: 100% pure
+  [24] Src [track_object]: track_object
+      PURITY: 100% pure
+  [25] Src [get_tracked_objects]: get_tracked_objects
+      PURITY: 100% pure
+  [26] Src [compare_snapshots]: compare_snapshots
+      PURITY: 100% pure
+  [27] Src [clear_snapshots]: clear_snapshots
+      PURITY: 100% pure
+  [28] Src [clear_tracking]: clear_tracking
+      PURITY: 100% pure
+
+LAYERS:
+  glon/                           CC̄=3.7    ←in:0  →out:0
+  │ !! cli                        860L  1C   36m  CC=13     ←0
+  │ utils                      202L  0C    9m  CC=7      ←0
+  │ core                       185L  2C   19m  CC=4      ←0
+  │ __init__                    22L  0C    0m  CC=0.0    ←0
+  │
+  ./                              CC̄=0.0    ←in:0  →out:0
+  │ goal.yaml                  428L  0C    0m  CC=0.0    ←0
+  │ prefact.yaml               122L  0C    0m  CC=0.0    ←0
+  │ pyproject.toml             117L  0C    0m  CC=0.0    ←0
+  │ Makefile                   115L  0C    0m  CC=0.0    ←0
+  │ project.sh                  61L  0C    0m  CC=0.0    ←0
+  │ planfile.yaml               19L  0C    0m  CC=0.0    ←0
+  │ local.dev.txt                8L  0C    0m  CC=0.0    ←0
+  │ activate.sh                  7L  0C    0m  CC=0.0    ←0
+  │
+
+COUPLING: no cross-package imports detected
+
+EXTERNAL:
+  validation: run `vallm batch .` → validation.toon
+  duplication: run `redup scan .` → duplication.toon

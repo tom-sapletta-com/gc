@@ -1,0 +1,85 @@
+# glon | 12f 2146L | shell:2,yaml:3,txt:1,toml:1,python:4 | 2026-08-11
+# generated in 0.01s
+# producer: code2llm | artifact: map.toon.yaml | schema: 1
+# stats: 64 func | 0 cls | 12 mod | CC̄=3.7 | critical:0 | cycles:0
+# alerts[5]: fan-out _handle_open=18; fan-out analyze_memory_usage=16; fan-out find_object_cycles=12; fan-out _select_matching_project=11; fan-out monitor_memory_usage=11
+# hotspots[5]: _handle_open fan=18; analyze_memory_usage fan=16; find_object_cycles fan=12; _select_matching_project fan=11; monitor_memory_usage fan=11
+# evolution: CC̄ 4.0→3.7 (improved -0.3)
+# Keys: M=modules, D=details, i=imports, e=exports, c=classes, f=functions, m=methods
+M[12]:
+  Makefile,115
+  activate.sh,7
+  glon/__init__.py,22
+  glon/cli.py,860
+  glon/core.py,185
+  glon/utils.py,202
+  goal.yaml,428
+  local.dev.txt,8
+  planfile.yaml,19
+  prefact.yaml,122
+  project.sh,61
+  pyproject.toml,117
+D:
+  glon/cli.py:
+    e: ProjectInfo,_expand_base_path,get_all_projects,get_all_projects_with_time,_read_clipboard_text,_extract_git_url_from_text,_clipboard_url_candidate,parse_git_url,create_directory_structure,clone_repository,grab_from_clipboard,_grab_git_url,_copy_or_link,_grab_local_path,parse_time_filter,list_projects,_resolve_filter_date,_print_project,_print_projects,_resolve_project_path,_choose_ide,open_in_ide,_parse_ide_option,_format_project_age,_print_project_choices,_prompt_for_project,_clone_clipboard_project,_open_from_clipboard,_open_recent_project,_select_matching_project,_build_open_parser,_handle_open,_handle_list,_handle_grab,_build_clone_parser,_handle_clone,main
+    ProjectInfo(TypedDict):  # Filesystem metadata used by project listing and selection...
+    _expand_base_path(base_path)
+    get_all_projects(base_path)
+    get_all_projects_with_time(base_path)
+    _read_clipboard_text()
+    _extract_git_url_from_text(text)
+    _clipboard_url_candidate(max_len)
+    parse_git_url(url)
+    create_directory_structure(owner;repo;base_path)
+    clone_repository(url;target_dir)
+    grab_from_clipboard(base_path;dry_run;verbose)
+    _grab_git_url(url;parsed;base_path;dry_run;verbose)
+    _copy_or_link(source_path;target_dir)
+    _grab_local_path(clipboard_text;base_path;dry_run;verbose)
+    parse_time_filter(filter_str)
+    list_projects(base_path;time_filter;verbose;limit)
+    _resolve_filter_date(time_filter)
+    _print_project(project;verbose)
+    _print_projects(projects;total_count;base_path;time_filter;verbose;limit)
+    _resolve_project_path(project_path)
+    _choose_ide(full_path)
+    open_in_ide(project_path;ide)
+    _parse_ide_option(arguments)
+    _format_project_age(mtime;now)
+    _print_project_choices(projects)
+    _prompt_for_project(projects;prompt;default_to_first)
+    _clone_clipboard_project(git_url;all_projects)
+    _open_from_clipboard(arguments;all_projects)
+    _open_recent_project(arguments)
+    _select_matching_project(project_name;projects)
+    _build_open_parser(projects)
+    _handle_open(arguments)
+    _handle_list(arguments)
+    _handle_grab(arguments)
+    _build_clone_parser()
+    _handle_clone(arguments)
+    main(argv)
+  glon/utils.py:
+    e: cleanup_temp_files,monitor_memory_usage,force_garbage_collection,find_object_cycles,get_object_size,analyze_memory_usage,set_debug_gc,clear_gc_debug,create_memory_logger
+    cleanup_temp_files(pattern)
+    monitor_memory_usage(duration;interval)
+    force_garbage_collection(verbose)
+    find_object_cycles(obj;max_depth)
+    get_object_size(obj)
+    analyze_memory_usage()
+    set_debug_gc(flags)
+    clear_gc_debug()
+    create_memory_logger(log_file)
+  glon/core.py:
+    e: GarbageCollector,MemoryProfiler
+    GarbageCollector: __init__(0),enable(0),disable(0),collect(1),get_stats(0),get_count(0),set_threshold(1),get_objects(0),get_referrers(1),get_referents(1),_record_stats(0),get_memory_summary(0)  # Enhanced garbage collector with monitoring and control featu...
+    MemoryProfiler: __init__(0),take_snapshot(1),track_object(2),get_tracked_objects(0),compare_snapshots(2),clear_snapshots(0),clear_tracking(0)  # Memory profiling and monitoring utilities...
+  activate.sh:
+  goal.yaml:
+  local.dev.txt:
+  planfile.yaml:
+  Makefile:
+  pyproject.toml:
+  prefact.yaml:
+  project.sh:
+  glon/__init__.py:

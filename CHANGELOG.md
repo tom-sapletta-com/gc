@@ -1,5 +1,41 @@
 ## [Unreleased]
 
+### Changed
+- Split CLI command dispatch and high-complexity project operations into focused helpers.
+- Add complete return annotations and align Prefact checks with intentional CLI output.
+
+### Fixed
+- Honor the requested garbage-collector generation in `GarbageCollector.collect`.
+- Support the explicit `glon clone <url>` command form.
+- Refresh code2llm reports after the refactor without stale cache data.
+
+## [0.1.28] - 2026-08-11
+
+### Docs
+- Update CHANGELOG.md
+- Update README.md
+- Update TODO.md
+- Update project/README.md
+- Update project/context.md
+
+### Test
+- Update tests/test_cli.py
+- Update tests/test_core.py
+- Update tests/test_utils.py
+
+### Other
+- Update .gitignore
+- Update app.doql.less
+- Update glon/__init__.py
+- Update glon/cli.py
+- Update glon/core.py
+- Update glon/utils.py
+- Update local.dev.txt
+- Update planfile.yaml
+- Update prefact.yaml
+- Update project.sh
+- ... and 23 more files
+
 ## [0.1.26] - 2026-03-05
 
 ### Docs
@@ -503,5 +539,3 @@ feat(docs): configuration management system
 - update glon/__init__.py
 - update glon/core.py
 - scripts: update project.sh
-
-

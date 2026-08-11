@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "glon"
-version = "0.1.26"
+version = "0.1.28"
 description = "Python package for garbage collection utilities and memory management"
 readme = "README.md"
 license = "Apache-2.0"
@@ -45,7 +45,10 @@ dev = [
     "black>=22.0.0",
     "flake8>=5.0.0",
     "mypy>=1.0.0",
-    "psutil>=5.8.0"
+    "psutil>=5.8.0",
+    "goal>=2.1.0; python_version >= '3.12'",
+    "costs>=0.1.53; python_version >= '3.9'",
+    "pfix>=0.1.60; python_version >= '3.10'",
 ]
 test = [
     "pytest>=7.0.0",
@@ -77,7 +80,38 @@ python_functions = ["test_*"]
 addopts = ""
 
 [tool.mypy]
-python_version = "3.8"
+# Modern mypy releases no longer accept 3.8 as an analysis target. The source
+# remains Python 3.8 compatible; 3.9 is the oldest target supported by mypy.
+python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
+
+[tool.costs]
+# AI Cost tracking configuration
+badge = true
+update_readme = true
+readme_path = "README.md"
+default_model = "openrouter/qwen/qwen3-coder-next"
+analysis_mode = "byok"
+full_history = true
+max_commits = 500
+
+# Cost thresholds for badge colors (USD)
+badge_color_thresholds = { low = 1.0, medium = 5.0, high = 10.0, critical = 50.0 }
+
+[tool.pfix]
+# Self-healing Python configuration
+model = "openrouter/qwen/qwen3-coder-next"
+auto_apply = true
+auto_install_deps = true
+auto_restart = false
+max_retries = 3
+create_backups = false
+git_auto_commit = false
+
+[tool.pfix.runtime_todo]
+enabled = true
+todo_file = "TODO.md"
+min_severity = "low"
+deduplicate = true

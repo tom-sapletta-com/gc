@@ -1,0 +1,163 @@
+// LESS format — define @variables here as needed
+
+app {
+  name: glon;
+  version: 0.1.26;
+  description: "Python package for garbage collection utilities and memory management";
+  license: Apache-2.0;
+  authors: "Tom Sapletta <tom@example.com>, Tom Sapletta <tom@sapletta.com>";
+  keywords: "garbage-collection, memory, profiling, utilities";
+  homepage: https://github.com/tom-sapletta/glon;
+  repository: https://github.com/tom-sapletta/glon.git;
+}
+
+dependencies {
+  runtime: "psutil>=5.8.0, argcomplete>=3.0.0";
+  dev: "pytest>=7.0.0, pytest-cov>=4.0.0, twine>=4.0.0, build>=1.0.0, black>=22.0.0, flake8>=5.0.0, mypy>=1.0.0, psutil>=5.8.0";
+  test: "pytest>=7.0.0, pytest-cov>=4.0.0, psutil>=5.8.0";
+}
+
+interface[type="cli"] {
+  framework: argparse;
+}
+interface[type="cli"] page[name="glon"] {
+  entry: glon.cli:main;
+}
+
+workflow[name="install"] {
+  trigger: manual;
+  step-1: run cmd=pip install -e .;
+}
+
+workflow[name="install-dev"] {
+  trigger: manual;
+  step-1: run cmd=pip install -e ".[dev,test]";
+}
+
+workflow[name="test"] {
+  trigger: manual;
+  step-1: run cmd=pytest;
+}
+
+workflow[name="test-verbose"] {
+  trigger: manual;
+  step-1: run cmd=pytest -v -s;
+}
+
+workflow[name="test-coverage"] {
+  trigger: manual;
+  step-1: run cmd=pytest --cov=glon --cov-report=html --cov-report=term;
+}
+
+workflow[name="lint"] {
+  trigger: manual;
+  step-1: run cmd=flake8 glon/ tests/;
+  step-2: run cmd=black --check glon/ tests/;
+  step-3: run cmd=mypy glon/;
+}
+
+workflow[name="format"] {
+  trigger: manual;
+  step-1: run cmd=black glon/ tests/;
+  step-2: run cmd=isort glon/ tests/;
+}
+
+workflow[name="type-check"] {
+  trigger: manual;
+  step-1: run cmd=mypy glon/;
+}
+
+workflow[name="clean"] {
+  trigger: manual;
+  step-1: run cmd=rm -rf build/;
+  step-2: run cmd=rm -rf dist/;
+  step-3: run cmd=rm -rf *.egg-info/;
+  step-4: run cmd=rm -rf .pytest_cache/;
+  step-5: run cmd=rm -rf htmlcov/;
+  step-6: run cmd=find . -type d -name __pycache__ -exec rm -rf {} +;
+  step-7: run cmd=find . -type f -name "*.pyc" -delete;
+}
+
+workflow[name="build"] {
+  trigger: manual;
+  step-1: run cmd=python -m build;
+}
+
+workflow[name="upload"] {
+  trigger: manual;
+  step-1: run cmd=python -m twine upload dist/*;
+}
+
+workflow[name="upload-test"] {
+  trigger: manual;
+  step-1: run cmd=python -m twine upload --repository testpypi dist/*;
+}
+
+workflow[name="docs"] {
+  trigger: manual;
+  step-1: run cmd=echo "Documentation generation not yet implemented";
+}
+
+workflow[name="run-example"] {
+  trigger: manual;
+  step-1: run cmd=python -c "from glon import GarbageCollector, MemoryProfiler; from glon.utils import analyze_memory_usage; print('=== Garbage Collection Demo ==='); gc_manager = GarbageCollector(); summary = gc_manager.get_memory_summary(); print(f'Memory Summary: {summary}'); print('\n=== Memory Profiling Demo ==='); profiler = MemoryProfiler(); profiler.take_snapshot('start'); data = [list(range(1000)) for _ in range(10)]; profiler.take_snapshot('after_data_creation'); comparison = profiler.compare_snapshots(0, 1); print(f'Memory change: {comparison[\"rss_diff\"]} bytes'); print('\n=== Memory Analysis Demo ==='); analysis = analyze_memory_usage(); print(f'Total objects: {analysis[\"objects\"][\"total_count\"]}'); print(f'Memory usage: {analysis[\"memory\"][\"rss\"]} bytes')";
+}
+
+workflow[name="dev-setup"] {
+  trigger: manual;
+  step-1: run cmd=echo "Development environment setup complete!";
+}
+
+workflow[name="ci"] {
+  trigger: manual;
+  step-1: run cmd=echo "CI checks passed!";
+}
+
+workflow[name="quick-test"] {
+  trigger: manual;
+  step-1: run cmd=python -m pytest tests/ -v;
+}
+
+workflow[name="quick-lint"] {
+  trigger: manual;
+  step-1: run cmd=flake8 glon/ tests/;
+}
+
+workflow[name="info"] {
+  trigger: manual;
+  step-1: run cmd=echo "Package: glon";
+  step-2: run cmd=echo "Version: $$(python -c 'import glon; print(glon.__version__)')";
+  step-3: run cmd=echo "Python: $$(python --version)";
+  step-4: run cmd=echo "Location: $$(python -c 'import glon; print(glon.__file__)')";
+}
+
+workflow[name="check-deps"] {
+  trigger: manual;
+  step-1: run cmd=pip check;
+  step-2: run cmd=pip list | grep -E "(psutil|pytest|black|mypy)";
+}
+
+workflow[name="perf-test"] {
+  trigger: manual;
+  step-1: run cmd=python -c "import time; from glon import GarbageCollector, MemoryProfiler; print('Performance Test...'); gc_manager = GarbageCollector(); profiler = MemoryProfiler(); start_time = time.time(); [data for i in range(1000) for data in [[list(range(100)) for _ in range(10)]]]; gc_time = time.time() - start_time; print(f'Garbage collection time: {gc_time:.4f}s'); start_time = time.time(); [profiler.take_snapshot(f'snapshot_{i}') for i in range(100)]; prof_time = time.time() - start_time; print(f'Memory profiling time: {prof_time:.4f}s')";
+}
+
+workflow[name="security"] {
+  trigger: manual;
+  step-1: run cmd=bandit -r glon/;
+  step-2: run cmd=safety check;
+}
+
+workflow[name="all-checks"] {
+  trigger: manual;
+  step-1: run cmd=echo "All checks completed successfully!";
+}
+
+deploy {
+  target: makefile;
+}
+
+environment[name="local"] {
+  runtime: python;
+  python_version: >=3.8;
+}

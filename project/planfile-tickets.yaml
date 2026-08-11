@@ -1,0 +1,300 @@
+source: code2llm
+# generated in 0.01s
+schema: code2llm.planfile_tickets.v1
+project_root: /home/tom/github/tom-sapletta-com/glon
+tickets:
+- signal: code2llm_smell_shotgun_surgery
+  title: 'Address code smell: Shotgun Surgery: options'
+  description: 'code2llm reports `Shotgun Surgery: options` in `glon/cli.py:760`.
+
+
+    Mutation of variable ''options'' spans 5 functions in /home/tom/github/tom-sapletta-com/glon/glon/cli.py.
+    Changing this logic requires work in many places.
+
+
+    Make the smallest refactor that removes the smell and run local tests.'
+  priority: high
+  labels:
+  - llm-ready
+  - code2llm
+  - code-smell
+  - shotgun-surgery
+  files:
+  - glon/cli.py
+  dedupe_key: 'code2llm:smell:shotgun_surgery:glon/cli.py:760:Shotgun Surgery: options'
+- signal: code2llm_smell_shotgun_surgery
+  title: 'Address code smell: Shotgun Surgery: owner'
+  description: 'code2llm reports `Shotgun Surgery: owner` in `glon/cli.py:577`.
+
+
+    Mutation of variable ''owner'' spans 5 functions in /home/tom/github/tom-sapletta-com/glon/glon/cli.py.
+    Changing this logic requires work in many places.
+
+
+    Make the smallest refactor that removes the smell and run local tests.'
+  priority: high
+  labels:
+  - llm-ready
+  - code2llm
+  - code-smell
+  - shotgun-surgery
+  files:
+  - glon/cli.py
+  dedupe_key: 'code2llm:smell:shotgun_surgery:glon/cli.py:577:Shotgun Surgery: owner'
+- signal: code2llm_smell_shotgun_surgery
+  title: 'Address code smell: Shotgun Surgery: parser'
+  description: 'code2llm reports `Shotgun Surgery: parser` in `glon/cli.py:760`.
+
+
+    Mutation of variable ''parser'' spans 5 functions in /home/tom/github/tom-sapletta-com/glon/glon/cli.py.
+    Changing this logic requires work in many places.
+
+
+    Make the smallest refactor that removes the smell and run local tests.'
+  priority: high
+  labels:
+  - llm-ready
+  - code2llm
+  - code-smell
+  - shotgun-surgery
+  files:
+  - glon/cli.py
+  dedupe_key: 'code2llm:smell:shotgun_surgery:glon/cli.py:760:Shotgun Surgery: parser'
+- signal: code2llm_smell_shotgun_surgery
+  title: 'Address code smell: Shotgun Surgery: repo'
+  description: 'code2llm reports `Shotgun Surgery: repo` in `glon/cli.py:577`.
+
+
+    Mutation of variable ''repo'' spans 5 functions in /home/tom/github/tom-sapletta-com/glon/glon/cli.py.
+    Changing this logic requires work in many places.
+
+
+    Make the smallest refactor that removes the smell and run local tests.'
+  priority: high
+  labels:
+  - llm-ready
+  - code2llm
+  - code-smell
+  - shotgun-surgery
+  files:
+  - glon/cli.py
+  dedupe_key: 'code2llm:smell:shotgun_surgery:glon/cli.py:577:Shotgun Surgery: repo'
+- signal: code2llm_smell_shotgun_surgery
+  title: 'Address code smell: Shotgun Surgery: target_dir'
+  description: 'code2llm reports `Shotgun Surgery: target_dir` in `glon/cli.py:577`.
+
+
+    Mutation of variable ''target_dir'' spans 5 functions in /home/tom/github/tom-sapletta-com/glon/glon/cli.py.
+    Changing this logic requires work in many places.
+
+
+    Make the smallest refactor that removes the smell and run local tests.'
+  priority: high
+  labels:
+  - llm-ready
+  - code2llm
+  - code-smell
+  - shotgun-surgery
+  files:
+  - glon/cli.py
+  dedupe_key: 'code2llm:smell:shotgun_surgery:glon/cli.py:577:Shotgun Surgery: target_dir'
+- signal: code2llm_smell_god_function
+  title: 'Address code smell: God Function: _clone_clipboard_project'
+  description: 'code2llm reports `God Function: _clone_clipboard_project` in `glon/cli.py:577`.
+
+
+    Function ''_clone_clipboard_project'' is oversized: CC=5, fan-out=6, mutations=7.
+
+
+    Make the smallest refactor that removes the smell and run local tests.'
+  priority: normal
+  labels:
+  - llm-ready
+  - code2llm
+  - code-smell
+  - god-function
+  files:
+  - glon/cli.py
+  dedupe_key: 'code2llm:smell:god_function:glon/cli.py:577:God Function: _clone_clipboard_project'
+- signal: code2llm_smell_god_function
+  title: 'Address code smell: God Function: _handle_clone'
+  description: 'code2llm reports `God Function: _handle_clone` in `glon/cli.py:801`.
+
+
+    Function ''_handle_clone'' is oversized: CC=9, fan-out=7, mutations=8.
+
+
+    Make the smallest refactor that removes the smell and run local tests.'
+  priority: normal
+  labels:
+  - llm-ready
+  - code2llm
+  - code-smell
+  - god-function
+  files:
+  - glon/cli.py
+  dedupe_key: 'code2llm:smell:god_function:glon/cli.py:801:God Function: _handle_clone'
+- signal: code2llm_smell_god_function
+  title: 'Address code smell: God Function: _handle_list'
+  description: 'code2llm reports `God Function: _handle_list` in `glon/cli.py:725`.
+
+
+    Function ''_handle_list'' is oversized: CC=3, fan-out=5, mutations=10.
+
+
+    Make the smallest refactor that removes the smell and run local tests.'
+  priority: normal
+  labels:
+  - llm-ready
+  - code2llm
+  - code-smell
+  - god-function
+  files:
+  - glon/cli.py
+  dedupe_key: 'code2llm:smell:god_function:glon/cli.py:725:God Function: _handle_list'
+- signal: code2llm_smell_god_function
+  title: 'Address code smell: God Function: _handle_open'
+  description: 'code2llm reports `God Function: _handle_open` in `glon/cli.py:697`.
+
+
+    Function ''_handle_open'' is oversized: CC=10, fan-out=18, mutations=7.
+
+
+    Make the smallest refactor that removes the smell and run local tests.'
+  priority: normal
+  labels:
+  - llm-ready
+  - code2llm
+  - code-smell
+  - god-function
+  files:
+  - glon/cli.py
+  dedupe_key: 'code2llm:smell:god_function:glon/cli.py:697:God Function: _handle_open'
+- signal: code2llm_smell_god_function
+  title: 'Address code smell: God Function: _resolve_project_path'
+  description: 'code2llm reports `God Function: _resolve_project_path` in `glon/cli.py:437`.
+
+
+    Function ''_resolve_project_path'' is oversized: CC=6, fan-out=10, mutations=8.
+
+
+    Make the smallest refactor that removes the smell and run local tests.'
+  priority: normal
+  labels:
+  - llm-ready
+  - code2llm
+  - code-smell
+  - god-function
+  files:
+  - glon/cli.py
+  dedupe_key: 'code2llm:smell:god_function:glon/cli.py:437:God Function: _resolve_project_path'
+- signal: code2llm_smell_god_function
+  title: 'Address code smell: God Function: _select_matching_project'
+  description: 'code2llm reports `God Function: _select_matching_project` in `glon/cli.py:641`.
+
+
+    Function ''_select_matching_project'' is oversized: CC=10, fan-out=11, mutations=7.
+
+
+    Make the smallest refactor that removes the smell and run local tests.'
+  priority: normal
+  labels:
+  - llm-ready
+  - code2llm
+  - code-smell
+  - god-function
+  files:
+  - glon/cli.py
+  dedupe_key: 'code2llm:smell:god_function:glon/cli.py:641:God Function: _select_matching_project'
+- signal: code2llm_smell_god_function
+  title: 'Address code smell: God Function: analyze_memory_usage'
+  description: 'code2llm reports `God Function: analyze_memory_usage` in `glon/utils.py:141`.
+
+
+    Function ''analyze_memory_usage'' is oversized: CC=3, fan-out=16, mutations=7.
+
+
+    Make the smallest refactor that removes the smell and run local tests.'
+  priority: normal
+  labels:
+  - llm-ready
+  - code2llm
+  - code-smell
+  - god-function
+  files:
+  - glon/utils.py
+  dedupe_key: 'code2llm:smell:god_function:glon/utils.py:141:God Function: analyze_memory_usage'
+- signal: code2llm_smell_god_function
+  title: 'Address code smell: God Function: create_memory_logger'
+  description: 'code2llm reports `God Function: create_memory_logger` in `glon/utils.py:188`.
+
+
+    Function ''create_memory_logger'' is oversized: CC=2, fan-out=7, mutations=7.
+
+
+    Make the smallest refactor that removes the smell and run local tests.'
+  priority: normal
+  labels:
+  - llm-ready
+  - code2llm
+  - code-smell
+  - god-function
+  files:
+  - glon/utils.py
+  dedupe_key: 'code2llm:smell:god_function:glon/utils.py:188:God Function: create_memory_logger'
+- signal: code2llm_smell_god_function
+  title: 'Address code smell: God Function: find_object_cycles'
+  description: 'code2llm reports `God Function: find_object_cycles` in `glon/utils.py:95`.
+
+
+    Function ''find_object_cycles'' is oversized: CC=1, fan-out=12, mutations=0.
+
+
+    Make the smallest refactor that removes the smell and run local tests.'
+  priority: normal
+  labels:
+  - llm-ready
+  - code2llm
+  - code-smell
+  - god-function
+  files:
+  - glon/utils.py
+  dedupe_key: 'code2llm:smell:god_function:glon/utils.py:95:God Function: find_object_cycles'
+- signal: code2llm_smell_god_function
+  title: 'Address code smell: God Function: main'
+  description: 'code2llm reports `God Function: main` in `glon/cli.py:838`.
+
+
+    Function ''main'' is oversized: CC=13, fan-out=5, mutations=2.
+
+
+    Make the smallest refactor that removes the smell and run local tests.'
+  priority: normal
+  labels:
+  - llm-ready
+  - code2llm
+  - code-smell
+  - god-function
+  files:
+  - glon/cli.py
+  dedupe_key: 'code2llm:smell:god_function:glon/cli.py:838:God Function: main'
+- signal: code2llm_smell_god_function
+  title: 'Address code smell: God Function: monitor_memory_usage'
+  description: 'code2llm reports `God Function: monitor_memory_usage` in `glon/utils.py:41`.
+
+
+    Function ''monitor_memory_usage'' is oversized: CC=3, fan-out=11, mutations=6.
+
+
+    Make the smallest refactor that removes the smell and run local tests.'
+  priority: normal
+  labels:
+  - llm-ready
+  - code2llm
+  - code-smell
+  - god-function
+  files:
+  - glon/utils.py
+  dedupe_key: 'code2llm:smell:god_function:glon/utils.py:41:God Function: monitor_memory_usage'
+applied: []
+skipped: []

@@ -1,0 +1,132 @@
+flowchart TD
+%% generated in 0.00s
+    subgraph glon__cli
+        glon__cli___expand_base_path["_expand_base_path"]
+        glon__cli__get_all_projects["get_all_projects"]
+        glon__cli__get_all_projects_with_time["get_all_projects_with_time"]
+        glon__cli___read_clipboard_text["_read_clipboard_text"]
+        glon__cli___extract_git_url_from_text["_extract_git_url_from_text"]
+        glon__cli___clipboard_url_candidate["_clipboard_url_candidate"]
+        glon__cli__parse_git_url["parse_git_url"]
+        glon__cli__create_directory_structure["create_directory_structure"]
+        glon__cli__clone_repository["clone_repository"]
+        glon__cli__grab_from_clipboard["grab_from_clipboard"]
+        glon__cli___grab_git_url["_grab_git_url"]
+        glon__cli___copy_or_link["_copy_or_link"]
+        glon__cli___grab_local_path("_grab_local_path CC=8")
+        glon__cli__parse_time_filter("parse_time_filter CC=8")
+        glon__cli__list_projects("list_projects CC=8")
+        glon__cli___resolve_filter_date["_resolve_filter_date"]
+        glon__cli___print_project["_print_project"]
+        glon__cli___print_projects["_print_projects"]
+        glon__cli___resolve_project_path["_resolve_project_path"]
+        glon__cli___choose_ide["_choose_ide"]
+        glon__cli__open_in_ide["open_in_ide"]
+        glon__cli___parse_ide_option["_parse_ide_option"]
+        glon__cli___format_project_age["_format_project_age"]
+        glon__cli___print_project_choices["_print_project_choices"]
+        glon__cli___prompt_for_project("_prompt_for_project CC=9")
+        glon__cli___clone_clipboard_project["_clone_clipboard_project"]
+        glon__cli___open_from_clipboard["_open_from_clipboard"]
+        glon__cli___open_recent_project["_open_recent_project"]
+        glon__cli___select_matching_project("_select_matching_project CC=10")
+        glon__cli___build_open_parser["_build_open_parser"]
+        glon__cli___handle_open("_handle_open CC=10")
+        glon__cli___handle_list["_handle_list"]
+        glon__cli___handle_grab["_handle_grab"]
+        glon__cli___build_clone_parser["_build_clone_parser"]
+        glon__cli___handle_clone("_handle_clone CC=9")
+        glon__cli__main("main CC=13")
+    end
+    subgraph glon__core
+        glon__core__GarbageCollector____init__["__init__"]
+        glon__core__GarbageCollector__enable["enable"]
+        glon__core__GarbageCollector__disable["disable"]
+        glon__core__GarbageCollector__collect["collect"]
+        glon__core__GarbageCollector__get_stats["get_stats"]
+        glon__core__GarbageCollector__get_count["get_count"]
+        glon__core__GarbageCollector__set_threshold["set_threshold"]
+        glon__core__GarbageCollector__get_objects["get_objects"]
+        glon__core__GarbageCollector__get_referrers["get_referrers"]
+        glon__core__GarbageCollector__get_referents["get_referents"]
+        glon__core__GarbageCollector___record_stats["_record_stats"]
+        glon__core__GarbageCollector__get_memory_summary["get_memory_summary"]
+        glon__core__MemoryProfiler____init__["__init__"]
+        glon__core__MemoryProfiler__take_snapshot["take_snapshot"]
+        glon__core__MemoryProfiler__track_object["track_object"]
+        glon__core__MemoryProfiler__get_tracked_objects["get_tracked_objects"]
+        glon__core__MemoryProfiler__compare_snapshots["compare_snapshots"]
+        glon__core__MemoryProfiler__clear_snapshots["clear_snapshots"]
+        glon__core__MemoryProfiler__clear_tracking["clear_tracking"]
+    end
+    subgraph glon__utils
+        glon__utils__cleanup_temp_files["cleanup_temp_files"]
+        glon__utils__monitor_memory_usage["monitor_memory_usage"]
+        glon__utils__force_garbage_collection["force_garbage_collection"]
+        glon__utils__find_object_cycles["find_object_cycles"]
+        glon__utils__get_object_size["get_object_size"]
+        glon__utils__analyze_memory_usage["analyze_memory_usage"]
+        glon__utils__set_debug_gc["set_debug_gc"]
+        glon__utils__clear_gc_debug["clear_gc_debug"]
+        glon__utils__create_memory_logger["create_memory_logger"]
+    end
+    glon__cli__get_all_projects --> glon__cli__get_all_projects_with_time
+    glon__cli__get_all_projects_with_time --> glon__cli___expand_base_path
+    glon__cli___extract_git_url_from_text --> glon__cli__parse_git_url
+    glon__cli___clipboard_url_candidate --> glon__cli___read_clipboard_text
+    glon__cli___clipboard_url_candidate --> glon__cli__parse_git_url
+    glon__cli__create_directory_structure --> glon__cli___expand_base_path
+    glon__cli__grab_from_clipboard --> glon__cli___read_clipboard_text
+    glon__cli__grab_from_clipboard --> glon__cli__parse_git_url
+    glon__cli__grab_from_clipboard --> glon__cli___grab_local_path
+    glon__cli__grab_from_clipboard --> glon__cli___grab_git_url
+    glon__cli___grab_git_url --> glon__cli__create_directory_structure
+    glon__cli___grab_git_url --> glon__cli__clone_repository
+    glon__cli___grab_local_path --> glon__cli___expand_base_path
+    glon__cli___grab_local_path --> glon__cli___copy_or_link
+    glon__cli__list_projects --> glon__cli___expand_base_path
+    glon__cli__list_projects --> glon__cli___resolve_filter_date
+    glon__cli__list_projects --> glon__cli___print_projects
+    glon__cli__list_projects --> glon__cli__get_all_projects_with_time
+    glon__cli___resolve_filter_date --> glon__cli__parse_time_filter
+    glon__cli___print_projects --> glon__cli___print_project
+    glon__cli___resolve_project_path --> glon__cli___expand_base_path
+    glon__cli__open_in_ide --> glon__cli___resolve_project_path
+    glon__cli__open_in_ide --> glon__cli___choose_ide
+    glon__cli___print_project_choices --> glon__cli___format_project_age
+    glon__cli___clone_clipboard_project --> glon__cli__parse_git_url
+    glon__cli___clone_clipboard_project --> glon__cli__create_directory_structure
+    glon__cli___clone_clipboard_project --> glon__cli__clone_repository
+    glon__cli___clone_clipboard_project --> glon__cli___expand_base_path
+    glon__cli___open_from_clipboard --> glon__cli___read_clipboard_text
+    glon__cli___open_from_clipboard --> glon__cli___extract_git_url_from_text
+    glon__cli___open_from_clipboard --> glon__cli___clone_clipboard_project
+    glon__cli___open_from_clipboard --> glon__cli__open_in_ide
+    glon__cli___open_from_clipboard --> glon__cli___parse_ide_option
+    glon__cli___open_recent_project --> glon__cli___print_project_choices
+    glon__cli___open_recent_project --> glon__cli___prompt_for_project
+    glon__cli___open_recent_project --> glon__cli__open_in_ide
+    glon__cli___open_recent_project --> glon__cli__get_all_projects_with_time
+    glon__cli___open_recent_project --> glon__cli___parse_ide_option
+    glon__cli___select_matching_project --> glon__cli___print_project_choices
+    glon__cli___select_matching_project --> glon__cli___prompt_for_project
+    glon__cli___handle_open --> glon__cli__get_all_projects
+    glon__cli___handle_open --> glon__cli__get_all_projects_with_time
+    glon__cli___handle_open --> glon__cli___select_matching_project
+    glon__cli___handle_open --> glon__cli__open_in_ide
+    glon__cli___handle_open --> glon__cli___open_from_clipboard
+    glon__cli___handle_open --> glon__cli___open_recent_project
+    glon__cli___handle_list --> glon__cli__list_projects
+    glon__cli___handle_grab --> glon__cli__grab_from_clipboard
+    glon__cli___handle_clone --> glon__cli__parse_git_url
+    glon__cli___handle_clone --> glon__cli__create_directory_structure
+    glon__cli___handle_clone --> glon__cli__clone_repository
+    glon__cli___handle_clone --> glon__cli___clipboard_url_candidate
+    glon__cli__main --> glon__cli___handle_clone
+    glon__cli__main --> glon__cli___handle_open
+    glon__cli__main --> glon__cli___handle_list
+    glon__cli__main --> glon__cli___handle_grab
+
+    classDef highCC fill:#ff6b6b,stroke:#c92a2a,color:#fff
+    classDef medCC fill:#ffd43b,stroke:#f08c00,color:#000
+    class glon__cli___grab_local_path,glon__cli__parse_time_filter,glon__cli__list_projects,glon__cli___prompt_for_project,glon__cli___select_matching_project,glon__cli___handle_open,glon__cli___handle_clone,glon__cli__main medCC

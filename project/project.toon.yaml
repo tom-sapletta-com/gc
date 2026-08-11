@@ -1,0 +1,45 @@
+# glon | 64 func | 3f | 2146L | python | 2026-08-11
+# generated in 0.00s
+
+HEALTH:
+  CC̄=3.7  critical=3 (limit:10)  dup=0  cycles=0
+
+ALERTS[7]:
+  !!  high_fan_out     _handle_open = 18 (limit:10)
+  !!  high_fan_out     analyze_memory_usage = 16 (limit:10)
+  !   high_fan_out     find_object_cycles = 12 (limit:10)
+  !   high_fan_out     _select_matching_project = 11 (limit:10)
+  !   high_fan_out     monitor_memory_usage = 11 (limit:10)
+  !   high_fan_out     get_all_projects_with_time = 10 (limit:10)
+  !   high_fan_out     _resolve_project_path = 10 (limit:10)
+
+MODULES[12] (top by size):
+  M[glon/cli.py] 860L C:1 F:36 CC↑13 D:0 (python)
+  M[goal.yaml] 428L C:0 F:0 CC↑0 D:0 (yaml)
+  M[glon/utils.py] 202L C:0 F:9 CC↑7 D:0 (python)
+  M[glon/core.py] 185L C:2 F:19 CC↑4 D:0 (python)
+  M[prefact.yaml] 122L C:0 F:0 CC↑0 D:0 (yaml)
+  M[pyproject.toml] 117L C:0 F:0 CC↑0 D:0 (toml)
+  M[Makefile] 115L C:0 F:0 CC↑0 D:0 ()
+  M[project.sh] 61L C:0 F:0 CC↑0 D:0 (shell)
+  M[glon/__init__.py] 22L C:0 F:0 CC↑0 D:0 (python)
+  M[planfile.yaml] 19L C:0 F:0 CC↑0 D:0 (yaml)
+  M[local.dev.txt] 8L C:0 F:0 CC↑0 D:0 (txt)
+  M[activate.sh] 7L C:0 F:0 CC↑0 D:0 (shell)
+  LANGS: python:4/yaml:3/shell:2/other:1/txt:1/toml:1
+
+HOTSPOTS[7]:
+  ★ _handle_open fan=18  // Orchestrates 18 calls
+  ★ analyze_memory_usage fan=16  // Analysis pipeline, 16 stages
+  ★ find_object_cycles fan=12  // Find reference cycles reachable from an object within a depth limit.
+  ★ _select_matching_project fan=11  // Orchestrates 11 calls
+  ★ monitor_memory_usage fan=11  // Sample process memory and GC counters for a fixed duration.
+
+REFACTOR[3]:
+  [1] H/H Split god module glon/cli.py (860L, 1 classes)
+  [2] M/M Reduce _handle_open fan-out (currently 18)
+  [3] M/M Reduce analyze_memory_usage fan-out (currently 16)
+
+EVOLUTION:
+  2026-03-05 CC̄=5.7 crit=4 2330L // Automated analysis
+  2026-08-11 CC̄=3.7 crit=3 2146L // Automated analysis

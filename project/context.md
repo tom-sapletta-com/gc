@@ -1,24 +1,28 @@
 # System Architecture Analysis
+<!-- generated in 0.00s -->
 
 ## Overview
 
 - **Project**: /home/tom/github/tom-sapletta-com/glon
+- **Primary Language**: python
+- **Languages**: python: 4, yaml: 3, shell: 2, txt: 1, toml: 1
 - **Analysis Mode**: static
-- **Total Functions**: 41
-- **Total Classes**: 2
-- **Modules**: 4
+- **Total Functions**: 64
+- **Total Classes**: 3
+- **Modules**: 12
 - **Entry Points**: 29
 
 ## Architecture by Module
+
+### glon.cli
+- **Functions**: 36
+- **Classes**: 1
+- **File**: `cli.py`
 
 ### glon.core
 - **Functions**: 19
 - **Classes**: 2
 - **File**: `core.py`
-
-### glon.cli
-- **Functions**: 13
-- **File**: `cli.py`
 
 ### glon.utils
 - **Functions**: 9
@@ -28,122 +32,73 @@
 
 Main execution flows into the system:
 
-### glon.cli.main
-> Main CLI entry point.
-- **Calls**: argparse.ArgumentParser, parser.add_argument, parser.add_argument, parser.add_argument, parser.add_argument, parser.parse_args, glon.cli.parse_git_url, glon.cli.create_directory_structure
-
 ### glon.utils.analyze_memory_usage
-> Analyze current memory usage and provide statistics.
-
-Returns:
-    Dictionary with memory analysis
-- **Calls**: psutil.Process, process.memory_info, gc.get_objects, ImportError, psutil.os.getpid, sorted, time.time, type
+> Summarize process memory, GC state, and common tracked types.
+- **Calls**: psutil.Process, process.memory_info, gc.get_objects, ImportError, os.getpid, sorted, time.time, type
 
 ### glon.utils.monitor_memory_usage
-> Monitor memory usage over time.
-
-Args:
-    duration: Monitoring duration in seconds
-    interval: Sampling interval in seconds
-    
-Returns:
-    List 
-- **Calls**: psutil.Process, time.time, ImportError, psutil.os.getpid, process.memory_info, samples.append, time.sleep, time.time
-
-### glon.core.MemoryProfiler.take_snapshot
-> Take a memory snapshot.
-
-Args:
-    label: Optional label for the snapshot
-    
-Returns:
-    Dictionary containing snapshot data
-- **Calls**: self.snapshots.append, psutil.Process, process.memory_info, os.getpid, time.time, len, gc.get_count, gc.get_objects
+> Sample process memory and GC counters for a fixed duration.
+- **Calls**: psutil.Process, time.time, ImportError, os.getpid, process.memory_info, samples.append, time.sleep, time.time
 
 ### glon.utils.find_object_cycles
-> Find reference cycles involving the given object.
+> Find reference cycles reachable from an object within a depth limit.
+- **Calls**: set, _find_cycles, id, visited.add, path.append, path_ids.append, path_ids.pop, path.pop
 
-Args:
-    obj: Object to analyze
-    max_depth: Maximum search depth
-    
-Returns:
-    List of refe
-- **Calls**: set, _find_cycles, id, visited.add, path.append, path.pop, visited.remove, gc.get_referents
+### glon.core.MemoryProfiler.take_snapshot
+> Capture process memory and garbage-collector counters.
+- **Calls**: self.snapshots.append, psutil.Process, process.memory_info, os.getpid, time.time, len, gc.get_count, time.time
 
 ### glon.utils.force_garbage_collection
-> Force garbage collection on all generations.
-
-Args:
-    verbose: If True, print detailed information
-    
-Returns:
-    Dictionary with collection resu
+> Collect every GC generation and return per-generation counters.
 - **Calls**: range, len, gc.collect, len, gc.get_objects, gc.get_objects, print
 
 ### glon.utils.create_memory_logger
-> Create a logger for memory-related events.
-
-Args:
-    log_file: Log file path
-    
-Returns:
-    Configured logger instance
+> Return the shared memory logger with one file handler.
 - **Calls**: logging.getLogger, logger.setLevel, logging.FileHandler, handler.setLevel, logging.Formatter, handler.setFormatter, logger.addHandler
 
 ### glon.core.GarbageCollector._record_stats
 > Record current statistics for monitoring.
 - **Calls**: self.stats_history.append, time.time, self.get_count, self.get_stats, len, self.get_objects
 
+### glon.cli.main
+> Dispatch the requested CLI command.
+- **Calls**: list, glon.cli._handle_clone, glon.cli._handle_open, glon.cli._handle_list, glon.cli._handle_grab
+
+### glon.utils.cleanup_temp_files
+> Remove matching regular files from the system temporary directory.
+- **Calls**: tempfile.gettempdir, os.listdir, os.path.join, os.path.isfile, os.remove
+
 ### glon.core.GarbageCollector.get_memory_summary
 > Get a summary of memory usage and garbage collection status.
 - **Calls**: self.get_count, self.get_stats, len, gc.get_threshold, self.get_objects
 
 ### glon.core.MemoryProfiler.track_object
-> Track an object using weak reference.
-
-Args:
-    obj: Object to track
-    label: Optional label for the object
-    
-Returns:
-    Tracking ID
+> Track an object by weak reference when its type permits it.
 - **Calls**: str, id, weakref.ref, time.time, type
 
 ### glon.core.MemoryProfiler.compare_snapshots
-> Compare two memory snapshots.
-
-Args:
-    index1: Index of first snapshot
-    index2: Index of second snapshot
-    
-Returns:
-    Comparison data
+> Return counter differences between two stored snapshots.
 - **Calls**: IndexError, snap1.get, snap2.get, len, len
-
-### glon.utils.cleanup_temp_files
-> Clean up temporary files matching a pattern.
-
-Args:
-    pattern: File pattern to match (default: "*")
-    
-Returns:
-    Number of files cleaned up
-- **Calls**: tempfile.gettempdir, os.listdir, os.path.join, os.path.isfile, os.remove
 
 ### glon.core.MemoryProfiler.get_tracked_objects
 > Get information about tracked objects.
 - **Calls**: self.weak_refs.items, info.get, info.get
 
 ### glon.core.GarbageCollector.collect
-> Force garbage collection for a specific generation.
-
-Args:
-    generation: Generation number (0, 1, or 2)
-    
-Returns:
-    Number of objects collecte
+> Collect one generation and record the resulting GC statistics.
 - **Calls**: gc.collect, self._record_stats
+
+### glon.utils.get_object_size
+> Return the shallow size of an object, or zero if unavailable.
+- **Calls**: sys.getsizeof
+
+### glon.utils.set_debug_gc
+> Set garbage-collector debug flags.
+- **Calls**: gc.set_debug
+
+### glon.utils.clear_gc_debug
+> Clear garbage collection debug flags.
+- **Calls**: gc.set_debug
 
 ### glon.core.GarbageCollector.__init__
 - **Calls**: gc.isenabled
@@ -188,46 +143,25 @@ Returns:
 > Clear all tracked objects.
 - **Calls**: self.weak_refs.clear
 
-### glon.utils.get_object_size
-> Get approximate size of an object in bytes.
-
-Args:
-    obj: Object to measure
-    
-Returns:
-    Approximate size in bytes
-- **Calls**: sys.getsizeof
-
-### glon.utils.set_debug_gc
-> Set garbage collection debug flags.
-
-Args:
-    flags: Debug flags (gc.DEBUG_STATS, gc.DEBUG_LEAK, etc.)
-- **Calls**: gc.set_debug
-
-### glon.utils.clear_gc_debug
-> Clear garbage collection debug flags.
-- **Calls**: gc.set_debug
-
 ### glon.core.MemoryProfiler.__init__
 
 ## Process Flows
 
 Key execution flows identified:
 
-### Flow 1: main
-```
-main [glon.cli]
-```
-
-### Flow 2: analyze_memory_usage
+### Flow 1: analyze_memory_usage
 ```
 analyze_memory_usage [glon.utils]
 ```
 
-### Flow 3: monitor_memory_usage
+### Flow 2: monitor_memory_usage
 ```
 monitor_memory_usage [glon.utils]
+```
+
+### Flow 3: find_object_cycles
+```
+find_object_cycles [glon.utils]
 ```
 
 ### Flow 4: take_snapshot
@@ -235,34 +169,42 @@ monitor_memory_usage [glon.utils]
 take_snapshot [glon.core.MemoryProfiler]
 ```
 
-### Flow 5: find_object_cycles
-```
-find_object_cycles [glon.utils]
-```
-
-### Flow 6: force_garbage_collection
+### Flow 5: force_garbage_collection
 ```
 force_garbage_collection [glon.utils]
 ```
 
-### Flow 7: create_memory_logger
+### Flow 6: create_memory_logger
 ```
 create_memory_logger [glon.utils]
 ```
 
-### Flow 8: _record_stats
+### Flow 7: _record_stats
 ```
 _record_stats [glon.core.GarbageCollector]
 ```
 
-### Flow 9: get_memory_summary
+### Flow 8: main
 ```
-get_memory_summary [glon.core.GarbageCollector]
+main [glon.cli]
+  └─> _handle_clone
+      └─> parse_git_url
+      └─> create_directory_structure
+          └─> _expand_base_path
+  └─> _handle_open
+      └─> get_all_projects
+          └─> get_all_projects_with_time
+      └─> get_all_projects_with_time
 ```
 
-### Flow 10: track_object
+### Flow 9: cleanup_temp_files
 ```
-track_object [glon.core.MemoryProfiler]
+cleanup_temp_files [glon.utils]
+```
+
+### Flow 10: get_memory_summary
+```
+get_memory_summary [glon.core.GarbageCollector]
 ```
 
 ## Key Classes
@@ -277,52 +219,64 @@ track_object [glon.core.MemoryProfiler]
 - **Methods**: 7
 - **Key Methods**: glon.core.MemoryProfiler.__init__, glon.core.MemoryProfiler.take_snapshot, glon.core.MemoryProfiler.track_object, glon.core.MemoryProfiler.get_tracked_objects, glon.core.MemoryProfiler.compare_snapshots, glon.core.MemoryProfiler.clear_snapshots, glon.core.MemoryProfiler.clear_tracking
 
+### glon.cli.ProjectInfo
+> Filesystem metadata used by project listing and selection.
+- **Methods**: 0
+- **Inherits**: TypedDict
+
 ## Data Transformation Functions
 
 Key functions that process and transform data:
 
 ### glon.cli.parse_git_url
-> Parse git URL and extract owner and repository name.
-
-Args:
-    url: Git URL (SSH or HTTPS)
-    
-Ret
-- **Output to**: re.match, re.match, re.match, ssh_match.group, ssh_match.group
+> Parse a supported SSH or HTTPS URL into owner and repository names.
+- **Output to**: pattern.fullmatch, match.group, match.group
 
 ### glon.cli.parse_time_filter
-> Parse time filter string like 'last month', 'last week', 'today'.
-
-Args:
-    filter_str: Time filter
+> Convert a supported relative-time label to a cutoff timestamp.
 - **Output to**: None.strip, datetime.now, filter_str.lower, timedelta, timedelta
+
+### glon.cli._parse_ide_option
+- **Output to**: argparse.ArgumentParser, parser.add_argument, parser.parse_known_args, cast, list
+
+### glon.cli._format_project_age
+- **Output to**: now.replace, timedelta
+
+### glon.cli._build_open_parser
+- **Output to**: argparse.ArgumentParser, parser.add_argument, parser.add_argument, setattr, argcomplete.autocomplete
+
+### glon.cli._build_clone_parser
+- **Output to**: argparse.ArgumentParser, parser.add_argument, parser.add_argument, parser.add_argument, parser.add_argument
 
 ## Public API Surface
 
 Functions exposed as public API (no underscore prefix):
 
-- `glon.cli.main` - 134 calls
-- `glon.cli.open_in_ide` - 46 calls
-- `glon.cli.grab_from_clipboard` - 37 calls
-- `glon.cli.list_projects` - 33 calls
 - `glon.utils.analyze_memory_usage` - 16 calls
 - `glon.utils.monitor_memory_usage` - 13 calls
+- `glon.utils.find_object_cycles` - 13 calls
+- `glon.cli.open_in_ide` - 12 calls
 - `glon.core.MemoryProfiler.take_snapshot` - 12 calls
-- `glon.utils.find_object_cycles` - 11 calls
-- `glon.cli.get_all_projects_with_time` - 11 calls
-- `glon.cli.parse_git_url` - 9 calls
+- `glon.cli.get_all_projects_with_time` - 10 calls
+- `glon.cli.list_projects` - 10 calls
 - `glon.cli.clone_repository` - 9 calls
 - `glon.cli.parse_time_filter` - 9 calls
+- `glon.cli.grab_from_clipboard` - 8 calls
 - `glon.utils.force_garbage_collection` - 7 calls
 - `glon.utils.create_memory_logger` - 7 calls
+- `glon.cli.main` - 5 calls
+- `glon.utils.cleanup_temp_files` - 5 calls
 - `glon.core.GarbageCollector.get_memory_summary` - 5 calls
 - `glon.core.MemoryProfiler.track_object` - 5 calls
 - `glon.core.MemoryProfiler.compare_snapshots` - 5 calls
-- `glon.utils.cleanup_temp_files` - 5 calls
+- `glon.cli.parse_git_url` - 3 calls
 - `glon.core.MemoryProfiler.get_tracked_objects` - 3 calls
-- `glon.cli.create_directory_structure` - 3 calls
-- `glon.core.GarbageCollector.collect` - 2 calls
 - `glon.cli.get_all_projects` - 2 calls
+- `glon.cli.create_directory_structure` - 2 calls
+- `glon.core.GarbageCollector.collect` - 2 calls
+- `glon.utils.get_object_size` - 1 calls
+- `glon.utils.set_debug_gc` - 1 calls
+- `glon.utils.clear_gc_debug` - 1 calls
 - `glon.core.GarbageCollector.enable` - 1 calls
 - `glon.core.GarbageCollector.disable` - 1 calls
 - `glon.core.GarbageCollector.get_stats` - 1 calls
@@ -333,9 +287,6 @@ Functions exposed as public API (no underscore prefix):
 - `glon.core.GarbageCollector.get_referents` - 1 calls
 - `glon.core.MemoryProfiler.clear_snapshots` - 1 calls
 - `glon.core.MemoryProfiler.clear_tracking` - 1 calls
-- `glon.utils.get_object_size` - 1 calls
-- `glon.utils.set_debug_gc` - 1 calls
-- `glon.utils.clear_gc_debug` - 1 calls
 
 ## System Interactions
 
@@ -343,8 +294,6 @@ How components interact:
 
 ```mermaid
 graph TD
-    main --> ArgumentParser
-    main --> add_argument
     analyze_memory_usage --> Process
     analyze_memory_usage --> memory_info
     analyze_memory_usage --> get_objects
@@ -355,16 +304,16 @@ graph TD
     monitor_memory_usage --> ImportError
     monitor_memory_usage --> getpid
     monitor_memory_usage --> memory_info
-    take_snapshot --> append
-    take_snapshot --> Process
-    take_snapshot --> memory_info
-    take_snapshot --> getpid
-    take_snapshot --> time
     find_object_cycles --> set
     find_object_cycles --> _find_cycles
     find_object_cycles --> id
     find_object_cycles --> add
     find_object_cycles --> append
+    take_snapshot --> append
+    take_snapshot --> Process
+    take_snapshot --> memory_info
+    take_snapshot --> getpid
+    take_snapshot --> time
     force_garbage_collec --> range
     force_garbage_collec --> len
     force_garbage_collec --> collect
@@ -373,6 +322,8 @@ graph TD
     create_memory_logger --> setLevel
     create_memory_logger --> FileHandler
     create_memory_logger --> Formatter
+    _record_stats --> append
+    _record_stats --> time
 ```
 
 ## Reverse Engineering Guidelines
