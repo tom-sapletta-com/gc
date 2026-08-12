@@ -220,11 +220,22 @@ git:
     enabled: true
     prefix: v
     format: '{prefix}{version}'
+governance:
+  delivery:
+    require_goal_a: true
+    default_mode: pull-request
+    allowed_modes:
+    - pull-request
+    - publish-only
+    - direct-main
+    remote: origin
+    base_branch: main
+    require_clean_governance: true
 strategies:
   python:
     test: pytest tests/ -v
     build: python -m build
-    publish: twine upload dist/glon-{version}*
+    publish: twine upload --skip-existing dist/glon-{version}*
     publish_enabled: true
     dependencies:
       file: requirements.txt
@@ -232,7 +243,7 @@ strategies:
   nodejs:
     test: npm test
     build: npm run build
-    publish: twine upload dist/glon-{version}*
+    publish: npm publish
     publish_enabled: true
     dependencies:
       file: package-lock.json
@@ -240,7 +251,7 @@ strategies:
   rust:
     test: cargo test
     build: cargo build --release
-    publish: twine upload dist/glon-{version}*
+    publish: cargo publish
     publish_enabled: true
     dependencies:
       file: Cargo.lock

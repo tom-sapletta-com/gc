@@ -1,0 +1,95 @@
+2026-08-12T19:05:00Z COMMAND goal governance adopt --source-revision 63a03d0c2ec417f8eab9a6edb3c4ed654937a1ac --target-root . --check
+CREATE 37 standard-managed paths
+MISSING target prerequisite project/TICKETS.md
+drift detected: 37 change(s) required
+exit=1
+
+2026-08-12T19:06:00Z COMMAND goal governance adopt --source-revision 63a03d0c2ec417f8eab9a6edb3c4ed654937a1ac --target-root .
+adopted wellmanifest/new-project 0.16.2 at 63a03d0c2ec417f8eab9a6edb3c4ed654937a1ac
+MISSING target prerequisite project/TICKETS.md
+exit=0
+
+2026-08-12T19:20:00Z COMMAND ./project/governance-check.sh --actor agent
+GOV-ARCHITECTURE-001 ERROR: Responsibility or persistent-data movement is not owned by an integration slice. [project/ticket-003/intent.json]
+GOV-BUDGET-001 ERROR: Actual diff for ticket-003 exceeds its approved complexity budget. [.governance/manifest.json, .governance/manifest.lock.json, goal.yaml, project.bat]
+GOV-FAIL: failed (2 errors, 0 warnings)
+exit=1
+
+2026-08-12T19:06:11Z COMMAND ./project/new-ticket.sh --title "Adopt governance and repair publish strategies" --agent codex --workstream governance --kind BUG --priority P1 --origin regression
+skipping untracked project/ticket-003; commit it to have it indexed
+Updated project/TICKETS.md ticket index successfully.
+Successfully scaffolded project/ticket-003 for 'Adopt governance and repair publish strategies'.
+exit=0
+
+2026-08-12T19:12:00Z COMMAND ./project/governance-check.sh --actor agent
+GOV-DELIVERY-001 ERROR: Implementation ticket ticket-003 has no bounded delivery contract. [project/ticket-003/intent.json]
+GOV-WORKSTREAM-003 ERROR: Changed paths are not owned by workstream 'governance'. [.github/workflows/new-project-governance.yml]
+GOV-WORKSTREAM-003 ERROR: Ticket ticket-003 claims paths outside workstream 'governance'. [.github/workflows/new-project-governance.yml]
+GOV-FAIL: failed (3 errors, 0 warnings)
+exit=1
+
+2026-08-12T19:12:00Z COMMAND goal governance adopt --source-revision 63a03d0c2ec417f8eab9a6edb3c4ed654937a1ac --target-root . --check
+up-to-date wellmanifest/new-project 0.16.2 at 63a03d0c2ec417f8eab9a6edb3c4ed654937a1ac
+exit=0
+
+2026-08-12T19:24:00Z COMMAND ./project/governance-check.sh --actor agent
+GOV-PASS: passed (0 errors, 0 warnings)
+exit=0
+
+2026-08-12T19:25:00Z COMMAND uv run --frozen --extra dev pytest -q
+57 passed in 2.49s
+exit=0
+
+2026-08-12T19:25:10Z COMMAND uv run --frozen --extra dev ruff check glon tests
+All checks passed!
+exit=0
+
+2026-08-12T19:25:10Z COMMAND uv run --frozen --extra dev black --check glon tests
+All done! 8 files would be left unchanged.
+exit=0
+
+2026-08-12T19:25:10Z COMMAND uv run --frozen --extra dev mypy glon
+pyproject.toml: [mypy]: python_version: Python 3.9 is not supported (must be 3.10 or higher)
+glon/cli.py:686: error: Argument 1 to "ChoicesCompleter" has incompatible type "Sequence[str]"; expected "Mapping[str, str | bytes]"  [arg-type]
+Found 1 error in 1 file (checked 4 source files)
+exit=1
+
+2026-08-12T19:27:00Z COMMAND compare normalized mypy output against isolated origin/main archive
+base_mypy_rc=1
+head_mypy_rc=1
+mypy_baseline_comparison=PASS
+exit=0
+
+2026-08-12T19:25:10Z COMMAND goal governance adopt --source-revision 63a03d0c2ec417f8eab9a6edb3c4ed654937a1ac --target-root . --check
+up-to-date wellmanifest/new-project 0.16.2 at 63a03d0c2ec417f8eab9a6edb3c4ed654937a1ac
+exit=0
+
+2026-08-12T19:25:00Z COMMAND goal doctor --fix
+Goal v2.1.300
+No issues found
+doctor_idempotent=PASS
+exit=0
+
+2026-08-12T19:24:30Z COMMAND goal governance verify-delivery --delivery-mode pull-request
+enabled=true
+hookInstalled=true
+mode=pull-request
+require_goal_a=true
+require_clean_governance=true
+serverEnforcementRequired=true
+exit=0
+
+2026-08-12T19:31:00Z COMMAND goal -a --delivery-mode pull-request --no-publish push --ticket ticket-003
+Goal v2.1.300
+Governed pull-request mode: registry publish waits for merge.
+Detected project types: python
+Error: pull-request resume refuses commits not bound to ticket-003: docs(governance): record ticket-003 validation
+exit=1
+
+2026-08-12T19:33:00Z COMMAND reword unpublished local candidate subjects with exact [ticket-003] prefix
+old_head=23b9eceeeec5918d4bf9648c6222ad2daf7f49ea
+new_head=b09ba4acd6d20900e5254273a6077b5afd2782ca
+old_tree=ec1bcc2d21082539f9917b8b1322c8b32fa462a9
+new_tree=ec1bcc2d21082539f9917b8b1322c8b32fa462a9
+GOV-PASS: passed (0 errors, 0 warnings)
+exit=0

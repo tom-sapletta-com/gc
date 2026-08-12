@@ -15,6 +15,13 @@ stwórz fodler w sciezce:
 
 i sklonuj tam ten zasob
 
+## Governance delivery
+
+- [x] [ticket-003](project/ticket-003/README.md): adopt immutable new-project
+  v0.16.2 and repair the Python, Node, and Rust publish strategies.
+- [ ] Validate governance, package tests, delivery policy, exact-head review,
+  merge, and terminal workspace cleanup.
+
 <!-- PREFACT:BEGIN — generated block, edits inside will be overwritten -->
 # TODO
 
