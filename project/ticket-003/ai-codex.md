@@ -43,12 +43,20 @@ change application behavior or publish a new package version.
 - Corrected the unchanged outcome's measured budget from two to four files;
   no allowed path or implementation was added. No Glon component ownership or
   persistent application data moves as part of the retrofit.
+- Verified 57 tests, Ruff and Black. Mypy remains nonzero for two pre-existing
+  baseline diagnostics; an isolated archive of `origin/main` produced exactly
+  the same normalized output with the same tool and lockfile.
+- Verified adoption drift, delivery policy, lock provenance, unchanged
+  `project.sh`, forbidden-path exclusion, and governance `0/0`; the candidate
+  is ready for PR publication while AC-07 remains open through review/merge.
 
 ## Blockers
 
 - None inside the recorded intent; proceed without a second confirmation.
 - New authority remains required for destructive action, secret access, new
   external coordination, material objective expansion and trusted merge.
+- The pre-existing mypy debt is explicitly outside this governance workstream
+  and does not represent a regression from this ticket.
 
 ## Authorization
 

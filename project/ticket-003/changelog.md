@@ -10,3 +10,7 @@
   the standard-managed governance workflow.
 - Aligned the bounded budget and architecture flags with the validator's
   measured atomic-adoption diff without expanding scope.
+- Recorded green tests/lint/format and the unchanged nonzero mypy baseline as
+  a separate, out-of-scope limitation.
+- Advanced the ticket to `PUBLICATION` after all local acceptance checks except
+  trusted current-head PR review and merge completed.

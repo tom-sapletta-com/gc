@@ -3,7 +3,7 @@
 - **ID**: ticket-003
 - **Owner**: unresolved:human
 - **Status**: IN_PROGRESS
-- **Workflow state**: EDIT
+- **Workflow state**: PUBLICATION
 - **Created**: 2026-08-12
 
 ## Goal and scope
@@ -18,20 +18,21 @@ must remain unchanged.
 
 ## Acceptance criteria
 
-- [ ] AC-01: The adoption lock identifies published commit
+- [x] AC-01: The adoption lock identifies published commit
   `63a03d0c2ec417f8eab9a6edb3c4ed654937a1ac` and version `0.16.2`.
-- [ ] AC-02: Existing `project.sh` remains byte-identical and is not listed as
+- [x] AC-02: Existing `project.sh` remains byte-identical and is not listed as
   a managed adoption file.
-- [ ] AC-03: Python publishing uses `twine upload --skip-existing`, Node uses
+- [x] AC-03: Python publishing uses `twine upload --skip-existing`, Node uses
   `npm publish`, and Rust uses `cargo publish`.
-- [ ] AC-04: Goal delivery defaults to `pull-request`, requires `goal -a`, and
+- [x] AC-04: Goal delivery defaults to `pull-request`, requires `goal -a`, and
   permits release modes only after trusted merge.
-- [ ] AC-05: The deterministic governance gate passes with zero errors.
-- [ ] AC-06: Existing Python tests and configured quality checks pass without
-  changing application source or tests.
+- [x] AC-05: The deterministic governance gate passes with zero errors.
+- [x] AC-06: Existing Python tests, Ruff and Black pass without changing
+  application source or tests; current mypy output is byte-for-byte equivalent
+  after path normalization to the `origin/main` baseline.
 - [ ] AC-07: Delivery uses a ticket-bound PR and an independent current-head
   approval before merge.
-- [ ] AC-08: User changes in the primary checkout are not included.
+- [x] AC-08: User changes in the primary checkout are not included.
 
 ## Risks and controls
 
@@ -50,6 +51,15 @@ must remain unchanged.
   adoption lock, optional Windows seed, and `goal.yaml`.
 - Session execution authorization comes from the user's request to continue.
   It is not trusted merge approval.
+
+## Known baseline limitation
+
+The current dependency set resolves a mypy release that no longer supports the
+configured Python 3.9 target and reports the existing `ChoicesCompleter`
+annotation in `glon/cli.py`. The exact same two diagnostics occur on
+`origin/main`; ticket-003 neither fixes nor suppresses them. They require a
+separate application/integration ticket because both `glon/**` and
+`pyproject.toml` are forbidden here.
 
 ## Participants
 

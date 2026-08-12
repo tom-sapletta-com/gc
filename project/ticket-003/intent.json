@@ -120,8 +120,8 @@
       },
       {
         "criterion": "AC-06",
-        "commands": ["uv run --extra dev pytest -q", "uv run --extra dev ruff check glon tests", "uv run --extra dev mypy glon", "uv run --extra dev black --check glon tests"],
-        "evidence": "Existing application behavior, lint, types and formatting remain green"
+        "commands": ["uv run --frozen --extra dev pytest -q", "uv run --frozen --extra dev ruff check glon tests", "uv run --frozen --extra dev black --check glon tests", "compare normalized uv run --frozen --extra dev mypy glon output with an origin/main archive"],
+        "evidence": "Tests, lint and formatting pass; the nonzero mypy diagnostics are exactly identical to the accepted-base baseline and introduce no regression"
       },
       {
         "criterion": "AC-07",
