@@ -1,0 +1,38 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-003",
+  "summary": "Adopt governance and repair publish strategies",
+  "workstream": "governance",
+  "classification": {
+    "kind": "BUG",
+    "priority": "P1",
+    "origin": "regression"
+  },
+  "allowedPaths": [
+    ".github/workflows/new-project-governance.yml",
+    ".governance/**",
+    "AGENTS.md",
+    "TODO.md",
+    "goal.yaml",
+    "project.bat",
+    "project/TICKETS.md",
+    "project/governance-check.bat",
+    "project/governance-check.sh",
+    "project/new-ticket.sh",
+    "project/readme.sh",
+    "project/ticket-003/**",
+    "scripts/runtime.sh"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md",
+    "glon/**",
+    "tests/**",
+    "project.sh",
+    "pyproject.toml",
+    "VERSION"
+  ],
+  "stacks": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null
+}

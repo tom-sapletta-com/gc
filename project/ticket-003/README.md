@@ -1,0 +1,50 @@
+# Ticket 003: Adopt governance and repair publish strategies
+
+- **ID**: ticket-003
+- **Owner**: unresolved:human
+- **Status**: IN_PROGRESS
+- **Workflow state**: EDIT
+- **Created**: 2026-08-12
+
+## Goal and scope
+
+Adopt the immutable `wellmanifest/new-project` v0.16.2 governance package and
+repair the publish commands corrupted by the historical Goal PY013 autofix.
+
+The implementation is limited to the standard-managed adoption payload,
+ticket evidence, and `goal.yaml`. Application source, tests, package metadata,
+the generated analysis under `project/`, and the target-owned `project.sh`
+must remain unchanged.
+
+## Acceptance criteria
+
+- [ ] AC-01: The adoption lock identifies published commit
+  `63a03d0c2ec417f8eab9a6edb3c4ed654937a1ac` and version `0.16.2`.
+- [ ] AC-02: Existing `project.sh` remains byte-identical and is not listed as
+  a managed adoption file.
+- [ ] AC-03: Python publishing uses `twine upload --skip-existing`, Node uses
+  `npm publish`, and Rust uses `cargo publish`.
+- [ ] AC-04: Goal delivery defaults to `pull-request`, requires `goal -a`, and
+  permits release modes only after trusted merge.
+- [ ] AC-05: The deterministic governance gate passes with zero errors.
+- [ ] AC-06: Existing Python tests and configured quality checks pass without
+  changing application source or tests.
+- [ ] AC-07: Delivery uses a ticket-bound PR and an independent current-head
+  approval before merge.
+- [ ] AC-08: User changes in the primary checkout are not included.
+
+## Risks and controls
+
+- A governance retrofit touches many managed files. Their hashes and source
+  revision are controlled by `.governance/manifest.lock.json`.
+- The old PY013 fix changed all publisher types. Tests inspect the three YAML
+  values structurally, not by a broad text replacement.
+- The primary checkout is dirty. Work happens in this dedicated worktree from
+  `origin/main`; no shared index is mutated.
+- Session execution authorization comes from the user's request to continue.
+  It is not trusted merge approval.
+
+## Participants
+
+- Human participant: unresolved; no user-* file was created by this script.
+- Agent participant: [ai-codex.md](ai-codex.md)
