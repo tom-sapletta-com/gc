@@ -14,3 +14,14 @@ skipping untracked project/ticket-003; commit it to have it indexed
 Updated project/TICKETS.md ticket index successfully.
 Successfully scaffolded project/ticket-003 for 'Adopt governance and repair publish strategies'.
 exit=0
+
+2026-08-12T19:12:00Z COMMAND ./project/governance-check.sh --actor agent
+GOV-DELIVERY-001 ERROR: Implementation ticket ticket-003 has no bounded delivery contract. [project/ticket-003/intent.json]
+GOV-WORKSTREAM-003 ERROR: Changed paths are not owned by workstream 'governance'. [.github/workflows/new-project-governance.yml]
+GOV-WORKSTREAM-003 ERROR: Ticket ticket-003 claims paths outside workstream 'governance'. [.github/workflows/new-project-governance.yml]
+GOV-FAIL: failed (3 errors, 0 warnings)
+exit=1
+
+2026-08-12T19:12:00Z COMMAND goal governance adopt --source-revision 63a03d0c2ec417f8eab9a6edb3c4ed654937a1ac --target-root . --check
+up-to-date wellmanifest/new-project 0.16.2 at 63a03d0c2ec417f8eab9a6edb3c4ed654937a1ac
+exit=0

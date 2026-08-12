@@ -6,3 +6,5 @@
 - No human participant identity or content was generated.
 - Recorded the immutable adoption revision, bounded paths, acceptance criteria,
   regression risk, and PR-only delivery plan.
+- Added the bounded delivery contract and the minimal local ownership rule for
+  the standard-managed governance workflow.

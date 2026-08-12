@@ -41,6 +41,10 @@ must remain unchanged.
   values structurally, not by a broad text replacement.
 - The primary checkout is dirty. Work happens in this dedicated worktree from
   `origin/main`; no shared index is mutated.
+- The v0.16.2 package installs a governance workflow under `.github`, while
+  its default manifest assigns all `.github/**` paths to infrastructure. The
+  local target manifest assigns this exact managed workflow to governance;
+  the upstream ownership mismatch remains a standard finding to report.
 - Session execution authorization comes from the user's request to continue.
   It is not trusted merge approval.
 

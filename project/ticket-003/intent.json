@@ -34,5 +34,108 @@
   "stacks": [],
   "dependsOn": [],
   "conflictsWith": [],
-  "integrationTicket": null
+  "integrationTicket": null,
+  "delivery": {
+    "acceptedBaseSha": "ae7ea3533f0e0c1decffda78a25aed3a6931a63a",
+    "targetBranch": "main",
+    "outcome": "Glon adopts immutable new-project v0.16.2 and restores language-correct retry-safe publish strategies through governed Goal pull-request delivery",
+    "nonGoals": [
+      "No application source, test, package metadata, generated analysis or target-owned project.sh change",
+      "No dependency, public API, package version, registry, tag or GitHub Release change",
+      "No direct push, force push, self-approval or merge without current-head trusted review",
+      "No deletion of unclassified local branches, worktrees or user changes"
+    ],
+    "complexity": "S",
+    "estimatedMinutes": 30,
+    "standardAdoption": {
+      "sourceRepository": "wellmanifest/new-project",
+      "fromRevision": null,
+      "toRevision": "63a03d0c2ec417f8eab9a6edb3c4ed654937a1ac"
+    },
+    "budgets": {
+      "maxImplementationFiles": 2,
+      "maxAffectedComponents": 2,
+      "maxPublicInterfaceChanges": 0,
+      "maxRuntimeDependencies": 0
+    },
+    "architecture": {
+      "status": "accepted",
+      "decision": "Install the hash-locked governance package without replacing target automation, assign its exact protected workflow to the local governance workstream, and repair only the three corrupted publisher values plus governed delivery policy",
+      "components": [
+        {
+          "name": "governance-adoption",
+          "paths": [
+            ".github/workflows/new-project-governance.yml",
+            ".governance/**",
+            "AGENTS.md",
+            "project.bat",
+            "project/governance-check.bat",
+            "project/governance-check.sh",
+            "project/new-ticket.sh",
+            "project/readme.sh",
+            "scripts/runtime.sh"
+          ]
+        },
+        {
+          "name": "delivery-configuration",
+          "paths": ["goal.yaml"]
+        }
+      ],
+      "responsibilityChanges": true,
+      "interfaceChanges": [],
+      "dataChanges": [
+        "The repository gains an immutable governance lock and a local workstream assignment for its managed GitHub workflow",
+        "Goal delivery and three language-specific publish commands become explicit"
+      ],
+      "ui": {
+        "impact": "none",
+        "states": [],
+        "evidence": []
+      },
+      "rollback": "Revert the unmerged ticket branch or the exact merge commit; keep origin/main and package version unchanged"
+    },
+    "runtimeDependencies": [],
+    "validation": [
+      {
+        "criterion": "AC-01",
+        "commands": ["goal governance adopt --source-revision 63a03d0c2ec417f8eab9a6edb3c4ed654937a1ac --target-root . --check"],
+        "evidence": "Adoption reports up-to-date and the lock binds published v0.16.2"
+      },
+      {
+        "criterion": "AC-02",
+        "commands": ["sha256sum project.sh", "validate .governance/manifest.lock.json"],
+        "evidence": "The baseline hash is unchanged and project.sh is absent from managedFiles"
+      },
+      {
+        "criterion": "AC-03",
+        "commands": ["parse goal.yaml and assert all three strategies"],
+        "evidence": "Structured YAML values match Twine retry-safe, npm and Cargo publishers"
+      },
+      {
+        "criterion": "AC-04",
+        "commands": ["goal governance verify-delivery --delivery-mode pull-request"],
+        "evidence": "Resolved policy requires goal -a and server-side enforcement"
+      },
+      {
+        "criterion": "AC-05",
+        "commands": ["./project/governance-check.sh --actor agent"],
+        "evidence": "Deterministic validator reports GOV-PASS with zero errors"
+      },
+      {
+        "criterion": "AC-06",
+        "commands": ["uv run --extra dev pytest -q", "uv run --extra dev ruff check glon tests", "uv run --extra dev mypy glon", "uv run --extra dev black --check glon tests"],
+        "evidence": "Existing application behavior, lint, types and formatting remain green"
+      },
+      {
+        "criterion": "AC-07",
+        "commands": ["goal --delivery-mode pull-request --no-publish -a push --ticket ticket-003", "protected GitHub governance check", "independent current-head Validator App review"],
+        "evidence": "One ticket-bound PR is reviewed at its exact head before merge"
+      },
+      {
+        "criterion": "AC-08",
+        "commands": ["git diff --name-only ae7ea3533f0e0c1decffda78a25aed3a6931a63a...HEAD", "git status --short in primary checkout"],
+        "evidence": "Forbidden application paths and primary-checkout user changes are absent from the ticket"
+      }
+    ]
+  }
 }

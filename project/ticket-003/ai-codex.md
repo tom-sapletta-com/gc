@@ -36,6 +36,10 @@ change application behavior or publish a new package version.
   from the request to execute this work.
 - Adopted the immutable v0.16.2 package in a dedicated worktree; implementation
   and validation evidence remain pending.
+- Added the bounded delivery contract required by the v0.16.2 validator.
+- Assigned only the exact standard-managed GitHub workflow to the local
+  governance workstream after the first gate exposed an upstream ownership
+  mismatch between the package and default manifest.
 
 ## Blockers
 
