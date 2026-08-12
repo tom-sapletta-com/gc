@@ -78,3 +78,18 @@ require_goal_a=true
 require_clean_governance=true
 serverEnforcementRequired=true
 exit=0
+
+2026-08-12T19:31:00Z COMMAND goal -a --delivery-mode pull-request --no-publish push --ticket ticket-003
+Goal v2.1.300
+Governed pull-request mode: registry publish waits for merge.
+Detected project types: python
+Error: pull-request resume refuses commits not bound to ticket-003: docs(governance): record ticket-003 validation
+exit=1
+
+2026-08-12T19:33:00Z COMMAND reword unpublished local candidate subjects with exact [ticket-003] prefix
+old_head=23b9eceeeec5918d4bf9648c6222ad2daf7f49ea
+new_head=b09ba4acd6d20900e5254273a6077b5afd2782ca
+old_tree=ec1bcc2d21082539f9917b8b1322c8b32fa462a9
+new_tree=ec1bcc2d21082539f9917b8b1322c8b32fa462a9
+GOV-PASS: passed (0 errors, 0 warnings)
+exit=0

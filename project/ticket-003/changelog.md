@@ -14,3 +14,5 @@
   a separate, out-of-scope limitation.
 - Advanced the ticket to `PUBLICATION` after all local acceptance checks except
   trusted current-head PR review and merge completed.
+- Reworded only unpublished local commit subjects to Goal's exact ticket-prefix
+  contract; candidate content remained byte-identical.

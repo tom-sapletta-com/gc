@@ -49,6 +49,9 @@ change application behavior or publish a new package version.
 - Verified adoption drift, delivery policy, lock provenance, unchanged
   `project.sh`, forbidden-path exclusion, and governance `0/0`; the candidate
   is ready for PR publication while AC-07 remains open through review/merge.
+- Goal's resume parser requires every subject to start with `[ticket-003] `.
+  The still-unpublished local subjects were reworded under a temporary backup
+  ref; pre/post tree hashes were identical and governance remained green.
 
 ## Blockers
 
