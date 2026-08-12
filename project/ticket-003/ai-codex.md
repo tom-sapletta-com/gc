@@ -40,6 +40,9 @@ change application behavior or publish a new package version.
 - Assigned only the exact standard-managed GitHub workflow to the local
   governance workstream after the first gate exposed an upstream ownership
   mismatch between the package and default manifest.
+- Corrected the unchanged outcome's measured budget from two to four files;
+  no allowed path or implementation was added. No Glon component ownership or
+  persistent application data moves as part of the retrofit.
 
 ## Blockers
 

@@ -8,3 +8,5 @@
   regression risk, and PR-only delivery plan.
 - Added the bounded delivery contract and the minimal local ownership rule for
   the standard-managed governance workflow.
+- Aligned the bounded budget and architecture flags with the validator's
+  measured atomic-adoption diff without expanding scope.

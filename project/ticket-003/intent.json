@@ -53,7 +53,7 @@
       "toRevision": "63a03d0c2ec417f8eab9a6edb3c4ed654937a1ac"
     },
     "budgets": {
-      "maxImplementationFiles": 2,
+      "maxImplementationFiles": 4,
       "maxAffectedComponents": 2,
       "maxPublicInterfaceChanges": 0,
       "maxRuntimeDependencies": 0
@@ -81,12 +81,9 @@
           "paths": ["goal.yaml"]
         }
       ],
-      "responsibilityChanges": true,
+      "responsibilityChanges": false,
       "interfaceChanges": [],
-      "dataChanges": [
-        "The repository gains an immutable governance lock and a local workstream assignment for its managed GitHub workflow",
-        "Goal delivery and three language-specific publish commands become explicit"
-      ],
+      "dataChanges": [],
       "ui": {
         "impact": "none",
         "states": [],

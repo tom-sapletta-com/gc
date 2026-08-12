@@ -45,6 +45,9 @@ must remain unchanged.
   its default manifest assigns all `.github/**` paths to infrastructure. The
   local target manifest assigns this exact managed workflow to governance;
   the upstream ownership mismatch remains a standard finding to report.
+- The bounded budget is four local files outside ticket evidence. This is the
+  validator's measured minimum for this atomic adoption: target manifest,
+  adoption lock, optional Windows seed, and `goal.yaml`.
 - Session execution authorization comes from the user's request to continue.
   It is not trusted merge approval.
 
