@@ -112,3 +112,5 @@ i sklonuj tam ten zasob
 - [x] tests/test_utils.py:70 - Function 'test_monitor_memory_usage' missing return type (suggested: -> None)
 - [x] tests/test_utils.py:5 - Unused import pytest
 <!-- PREFACT:END -->
+
+- [x] Issue #2: add canonical documentation instructions, [index](docs/README.md), immutable standard pin and verification workflow. Protected publication is tracked by ticket-002.

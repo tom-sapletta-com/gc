@@ -248,3 +248,7 @@ Licensed under Apache-2.0.
 ## Author
 
 Tom Sapletta
+
+## Documentation placement
+
+Use the [documentation index](docs/README.md) and [agent instructions](AGENTS.md) for canonical reports and plans. The `verify` workflow runs existing tests and the pinned documentation checker.

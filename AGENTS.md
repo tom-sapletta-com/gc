@@ -1,73 +1,22 @@
-# AGENTS.md
+# Repository agent instructions
 
-This target repository follows `wellmanifest/new-project` policy-as-code.
+<!-- wellmanifest:docs-placement:start -->
+## Documentation placement
 
-Before any multi-step implementation, an agent must:
+Before research or writing, identify the owning repository, document kind and canonical path using [wellmanifest/docs 0.1.0](https://github.com/wellmanifest/docs/blob/fdb0fcaa7c606dc2503cabb71eff64d5f86ee659/docs/standard/POLICY.md). Resolve existing documents through the artifact registry when available; update the canonical document instead of creating duplicates.
 
-1. Read `.governance/manifest.json`, `TODO.md`, `project/TICKETS.md` and the
-   active ticket.
-2. Reuse an unfinished ticket whose workstream and scope match. A second active
-   ticket is allowed only in a distinct workstream with no write-scope overlap.
-   Otherwise run `./project/new-ticket.sh --title "..." --agent "..."
-   --workstream "..."`.
-3. Complete the ticket `README.md`, owned `ai-*.md`, `intent.json` and `TODO.md`.
-4. Treat a user request that already says to execute or work autonomously as
-   `SESSION_EXECUTION_AUTHORIZATION`; record it in the agent-owned ticket file.
-5. Move to `EDIT` without a second confirmation and stay inside `intent.json`
-   `allowedPaths`. Ask for new authority only for destructive action, secret
-   access, new external coordination, or material objective expansion.
-6. Never create or edit `project/ticket-*/user-*.md`; only its human owner or a
-   trusted intake boundary may do so.
-7. Keep executable source/tests/scripts outside ticket directories.
-8. Run the managed `./project/governance-check.sh` (or
-   `project\governance-check.bat` on Windows) plus the stack checks before
-   reporting completion. Root `project.sh` / `project.bat` are optional
-   target-owned seed aliases and must not be assumed to contain the gate.
-9. Serialize ticket-ID allocation before branching, then use a separate
-   branch/worktree per implementation ticket. Each diff must resolve to exactly
-   one active ticket. Shared contract paths are edited only by the declared
-   integration workstream; `integrationTicket` coordinates work but does not
-   transfer path ownership.
-10. Only `IN_PROGRESS` reserves a workstream and write scope. `BACKLOG`, `PLAN`
-   and `BLOCKED` retain evidence without blocking another implementation;
-   transition back to `IN_PROGRESS` before changing source or tests.
-11. Treat GitHub review as trusted only when it targets the current HEAD and
-   either a `User` login is in protected `trusted-reviewers` or a `Bot` login
-   is in the separate protected `trusted-validator-apps` input. Never trust an
-   arbitrary Bot review.
-12. Require merge approval evidence to bind repository, PR, current HEAD,
-   active ticket and actor. The protected resolver creates that evidence
-   outside the PR checkout; repository-authored evidence is untrusted.
-13. A signed attestation is trusted only after a protected verifier validates
-   its signature, issuer, predicate type and subject bindings.
-14. Validator-agent examples use
-   `LLM_MODEL_VALIDATOR=openrouter/z-ai/glm-5.2`; model findings stay advisory.
-15. Configure GitHub with `delete_branch_on_merge=true`. A merged ticket branch
-   must disappear after merge. A PR closed without merge keeps its branch until
-   the owner explicitly discards that unmerged work. When no PR is open, the
-   only remote branch is the default branch.
-16. At merge, publication or explicit pilot discard, inventory temporary linked
-   worktrees, duplicate clones and non-default local branches. Verify dirty state and HEAD reachability
-   before removal; preserve unknown or unique data. Remove an exact linked
-   worktree through Git, prune its metadata and only then delete its released
-   disposable branch. Prefer recoverable trash for a verified duplicate clone.
-   The checker is read-only; during active work exempt a branch only through
-   the exact allowlisted checkout path, never a pattern or branch name. Run the
-   adopted workspace lifecycle checker through Goal for the terminal audit. CI
-   validates GitHub state separately and cannot inspect a developer filesystem.
-17. Allocate every ticket ID only through `./project/new-ticket.sh` after
-   fetching/pruning. Never create or copy `project/ticket-{NNN}` manually; the
-   clone-wide lock and high-water reservation must exist before commit.
-18. Keep an implementation ticket `IN_PROGRESS / PUBLICATION` through
-   exact-head review and trusted merge. Set `DONE / DONE` only in a
-   governance-only closure based on the integrated default branch.
-19. Resolve `GOV-*` findings through `.governance/diagnostics.json` and its
-   linked `.governance/error/*.md` runbook when present. Ticket logs are
-   historical evidence and never authorize bypassing a fail-closed gate.
-20. Keep each incident-specific `remediation-intent.dsl.json` in its target
-   ticket. Validate it before LLM planning and treat todo2code/LLM results as
-   digest-bound advisory input; never let either expand the accepted intent.
+- Durable information: `docs/information/<id>.md`.
+- Analysis and final reports: `docs/analysis/<id>.md`.
+- Refactoring plans: `docs/refactoring/<id>.md`.
+- Architecture decisions: `docs/decisions/<id>.md`.
+- Index every delivered document in `docs/README.md`.
+- Cross-repository results have one owner, `subactor/docs`, under `architecture/{information,analysis,refactoring,decisions}/`, indexed in its root `README.md`. Other repositories link to that source.
 
-Markdown approval is an audit note, not trusted merge approval. Required
-merge approval comes from the repository's protected review, attestation and
-ruleset boundary.
+Use the standard's JSON metadata and section templates. Keep stable IDs, increment the declared version when findings change, update dates, bind exact source revisions and evidence, and separate facts, hypotheses and recommendations. Preserve historical append-only versioning.
+
+A final report or plan must not exist only in `$HOME/.local/state`, `/tmp`, agent session storage, chat or `project/ticket-*`. Tickets contain bounded intent and a link to the canonical result. Raw logs, transcripts, secrets, working databases, backups and Git bundles remain in private ignored recovery storage; publish only safe receipt references and digests when needed.
+
+Before completion, verify placement, metadata, index links and Git tracking. The final response links to the repository document and states whether it is local, committed, in a PR or merged. Documentation status and session prose never grant execution or merge approval.
+
+The adoption pin is `.governance/docs.json`. The `verify` workflow runs the checker from the immutable standard revision. Validate changed documents and report actual CI results; metadata or prose alone never proves enforcement or grants approval.
+<!-- wellmanifest:docs-placement:end -->
